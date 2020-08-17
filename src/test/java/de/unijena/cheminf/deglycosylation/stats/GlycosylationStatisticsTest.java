@@ -1,4 +1,37 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2020 Jonas Schaub, Achim Zielesny, Christoph Steinbeck, Maria Sorokina
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 package de.unijena.cheminf.deglycosylation.stats;
+
+/**
+ * TODO:
+ * - Split up Coconut stats test
+ * - Redo statistics with new COCONUT version and new algo (also ZINC)
+ * - test whether the sugar-containing molecules in ZINC are NPs or are actually also part of COCONUT
+ * - Do explicit imports
+ * - write doc
+ */
 
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoTimeoutException;
@@ -31,36 +64,76 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.stream.Collectors;
 
+/**
+ * TODO
+ *
+ * @author Jonas Schaub
+ * @version 1.0.0.0
+ */
 public class GlycosylationStatisticsTest extends SugarRemovalUtility {
+    //<editor-fold defaultstate="collapsed" desc="Private static final constants">
+    /**
+     * Host of the MongoDB instance
+     */
+    private static final String HOST = "localhost";
+
+    /**
+     * Port where the MongoDB instance is running
+     */
+    private static final int PORT = 27017;
+
+    /**
+     * Name of the MongoDB database
+     */
+    private static final String DATABASE_NAME = "COCONUTaugust17";
+
+    /**
+     * Collection from the database to load
+     */
+    private static final String COLLECTION_NAME = "uniqueNaturalProduct";
+
+    /**
+     * Name of the output folder
+     */
+    private static final String OUTPUT_FOLDER_NAME = "GlycosylationStatisticsTest_Output";
+
+    /**
+     * Name of the document variable that contains an ID of the given molecule, "coconut_id" or "inchikey"
+     */
+    private static final String ID_KEY = "coconut_id";
+
+    /**
+     * Name of the document variable that contains the SMILES code string of the given molecule, "clean_smiles" or "smiles"
+     */
+    private static final String SMILES_CODE_KEY = "smiles";
+
+    /**
+     * Logger of this class
+     */
+    private static final Logger LOGGER = Logger.getLogger(GlycosylationStatisticsTest.class.getName());
+    //</editor-fold>
+    //
     //<editor-fold desc="Tests involving databases">
     /**
+     * TODO
+     *
      * @throws Exception
      */
     @Ignore
     @Test
     public void visualInspectionOfCoconutTest() throws Exception {
-        MongoClientSettings.Builder tmpBuilder = MongoClientSettings.builder();
-        ServerAddress tmpAddress = new ServerAddress("localhost", 27017);
-        tmpBuilder.applyToClusterSettings(builder -> builder.hosts(Collections.singletonList(tmpAddress)));
-        MongoClientSettings tmpSettings = tmpBuilder.build();
-        MongoClient tmpMongoClient = MongoClients.create(tmpSettings);
-        String tmpCollectionName = "COCONUTmay";
-        MongoDatabase tmpDatabase = tmpMongoClient.getDatabase(tmpCollectionName);
-        String tmpDatabaseName = "uniqueNaturalProduct";
-        MongoCollection<Document> tmpCollection = tmpDatabase.getCollection(tmpDatabaseName);
+        final String tmpSpecificOutputFolderName = "coconut_inspection_test";
         MongoCursor<Document> tmpCursor = null;
-        Logger tmpLogger = Logger.getLogger(GlycosylationStatisticsTest.class.getName());
         try {
-            tmpCursor = tmpCollection.find().iterator();
+            //prints to console if connection was successful
+            tmpCursor = this.getCOCONUTMongoCursorForIteration();
         } catch (MongoTimeoutException aMongoTimeoutException) {
-            tmpLogger.log(Level.SEVERE, aMongoTimeoutException.toString(), aMongoTimeoutException);
+            GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, aMongoTimeoutException.toString(), aMongoTimeoutException);
             System.out.println("Timed out while trying to connect to MongoDB. Test is ignored.");
             Assume.assumeTrue(false);
         }
-        System.out.println("Connection to MongoDB successful.");
-        System.out.println("Collection " + tmpCollectionName + " in database " + tmpDatabaseName + " is loaded.");
-        String tmpOutputFolderPath = (new File("GlycosylationStatisticsTest_Output")).getAbsolutePath() + File.separator
-                + "coconut_inspection_test" + File.separator;
+        String tmpOutputFolderPath = (new File(GlycosylationStatisticsTest.OUTPUT_FOLDER_NAME)).getAbsolutePath() + File.separator
+                + tmpSpecificOutputFolderName + File.separator;
         File tmpOutputFolderFile = new File(tmpOutputFolderPath);
         if (!tmpOutputFolderFile.exists()) {
             tmpOutputFolderFile.mkdirs();
@@ -72,26 +145,16 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         try {
             tmpLogFileHandler = new FileHandler(tmpOutputFolderPath + "Log.txt");
         } catch (IOException anIOException) {
-            tmpLogger.log(Level.SEVERE, anIOException.toString(), anIOException);
+            GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anIOException.toString(), anIOException);
             System.out.println("An exception occurred while setting up the log file. Logging will be done in default configuration.");
         }
         tmpLogFileHandler.setLevel(Level.ALL);
         tmpLogFileHandler.setFormatter(new SimpleFormatter());
         Logger.getLogger("").addHandler(tmpLogFileHandler);
         Logger.getLogger("").setLevel(Level.WARNING);
-        //Done for reproducibility
+        //All settings in default
         SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
-        System.out.println(tmpSugarRemovalUtil.areOnlyCircularSugarsWithOGlycosidicBondDetected());
-        System.out.println(tmpSugarRemovalUtil.areOnlyTerminalSugarsRemoved());
-        System.out.println(tmpSugarRemovalUtil.getPreservationModeSetting());
-        System.out.println(tmpSugarRemovalUtil.getPreservationModeThresholdSetting());
-        System.out.println(tmpSugarRemovalUtil.areOnlyCircularSugarsWithEnoughExocyclicOxygenAtomsDetected());
-        System.out.println(tmpSugarRemovalUtil.getExocyclicOxygenAtomsToAtomsInRingRatioThresholdSetting());
-        System.out.println(tmpSugarRemovalUtil.areLinearSugarsInRingsDetected());
-        System.out.println(tmpSugarRemovalUtil.arePropertiesAddedToSugarContainingMolecules());
-        System.out.println(tmpSugarRemovalUtil.getLinearSugarCandidateMinSizeSetting());
-        System.out.println(tmpSugarRemovalUtil.getLinearSugarCandidateMaxSizeSetting());
-        System.out.println(tmpSugarRemovalUtil.areLinearAcidicSugarsDetected());
+        tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         Document tmpCurrentDoc = null;
         String tmpID = "";
         String tmpSmilesCode = "";
@@ -106,34 +169,27 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             try {
                 tmpCurrentDoc = tmpCursor.next();
                 tmpMoleculeCounter++;
-                tmpID = tmpCurrentDoc.getString("coconut_id");
-                tmpSmilesCode = tmpCurrentDoc.getString("clean_smiles");
+                tmpID = tmpCurrentDoc.getString(GlycosylationStatisticsTest.ID_KEY);
+                tmpSmilesCode = tmpCurrentDoc.getString(GlycosylationStatisticsTest.SMILES_CODE_KEY);
                 tmpMolecule = tmpSmiPar.parseSmiles(tmpSmilesCode);
                 tmpMolecule.setTitle(tmpID);
                 IAtomContainer tmpDeglycosylatedClone = tmpSugarRemovalUtil.removeCircularAndLinearSugars(tmpMolecule, true);
                 if ((boolean)tmpDeglycosylatedClone.getProperty(SugarRemovalUtility.CONTAINS_SUGAR_PROPERTY_KEY) == true) {
-                    //tmpDepictionGenerator.depict(tmpMolecule).writeTo(tmpOutputFolderPath + File.separator + tmpID + ".png");
-                    //tmpDepictionGenerator.depict(tmpDeglycosylatedClone).writeTo(tmpOutputFolderPath + File.separator + tmpID + "_1.png");
+                    tmpDepictionGenerator.depict(tmpMolecule).writeTo(tmpOutputFolderPath + File.separator + tmpID + ".png");
+                    tmpDepictionGenerator.depict(tmpDeglycosylatedClone).writeTo(tmpOutputFolderPath + File.separator + tmpID + "_deglycosylated.png");
                     tmpSugarContainingMoleculesCounter++;
                     if ((boolean)tmpDeglycosylatedClone.getProperty(SugarRemovalUtility.CONTAINS_CIRCULAR_SUGAR_PROPERTY_KEY) == true) {
                         tmpContainsCircularSugarsCounter++;
                     }
                     if ((boolean)tmpDeglycosylatedClone.getProperty(SugarRemovalUtility.CONTAINS_LINEAR_SUGAR_PROPERTY_KEY) == true) {
-                        //tmpDepictionGenerator.depict(tmpMolecule).writeTo(tmpOutputFolderPath + File.separator + tmpID + ".png");
-                        //tmpDepictionGenerator.depict(tmpDeglycosylatedClone).writeTo(tmpOutputFolderPath + File.separator + tmpID + "_1.png");
                         tmpContainsLinearSugarsCounter++;
                     }
-                    /*if ((boolean)tmpDeglycosylatedClone.getProperty(SugarRemovalUtility.CONTAINS_CIRCULAR_SUGAR_PROPERTY_KEY) == true
-                    && (boolean)tmpDeglycosylatedClone.getProperty(SugarRemovalUtility.CONTAINS_LINEAR_SUGAR_PROPERTY_KEY) == true) {
-                        //tmpDepictionGenerator.depict(tmpMolecule).writeTo(tmpOutputFolderPath + File.separator + tmpID + ".png");
-                        //tmpDepictionGenerator.depict(tmpDeglycosylatedClone).writeTo(tmpOutputFolderPath + File.separator + tmpID + "_1.png");
-                    }*/
                     if (tmpDeglycosylatedClone.isEmpty()) {
                         tmpBasicallyASugarCounter++;
                     }
                 }
             } catch (Exception anException) {
-                tmpLogger.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
+                GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                 tmpExceptionsCounter++;
                 continue;
             }
@@ -149,38 +205,28 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     }
 
     /**
-     * TODO
+     * TODO split this up into multiple tests!
      */
     @Ignore
     @Test
     public void CoconutStatsTest() throws Exception {
 
         //<editor-fold desc="Connection to MongoDB">
-        MongoClientSettings.Builder tmpBuilder = MongoClientSettings.builder();
-        ServerAddress tmpAddress = new ServerAddress("localhost", 27017);
-        tmpBuilder.applyToClusterSettings(builder -> builder.hosts(Collections.singletonList(tmpAddress)));
-        MongoClientSettings tmpSettings = tmpBuilder.build();
-        MongoClient tmpMongoClient = MongoClients.create(tmpSettings);
-        String tmpCollectionName = "COCONUTmay";
-        MongoDatabase tmpDatabase = tmpMongoClient.getDatabase(tmpCollectionName);
-        String tmpDatabaseName = "uniqueNaturalProduct";
-        MongoCollection<Document> tmpCollection = tmpDatabase.getCollection(tmpDatabaseName);
         MongoCursor<Document> tmpCursor = null;
-        Logger tmpLogger = Logger.getLogger(GlycosylationStatisticsTest.class.getName());
         try {
-            tmpCursor = tmpCollection.find().iterator();
+            //prints to console if connection was successful
+            tmpCursor = this.getCOCONUTMongoCursorForIteration();
         } catch (MongoTimeoutException aMongoTimeoutException) {
-            tmpLogger.log(Level.SEVERE, aMongoTimeoutException.toString(), aMongoTimeoutException);
+            GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, aMongoTimeoutException.toString(), aMongoTimeoutException);
             System.out.println("Timed out while trying to connect to MongoDB. Test is ignored.");
             Assume.assumeTrue(false);
         }
-        System.out.println("Connection to MongoDB successful.");
-        System.out.println("Collection " + tmpCollectionName + " in database " + tmpDatabaseName + " is loaded.");
-        String tmpOutputFolderPath = (new File("GlycosylationStatisticsTest_Output")).getAbsolutePath() + File.separator
-                + "coconut_stats_test" + File.separator;
         //</editor-fold>
 
         //<editor-fold desc="Output folder and logging setup">
+        final String tmpSpecificOutputFolderName = "coconut_stats_test";
+        String tmpOutputFolderPath = (new File(GlycosylationStatisticsTest.OUTPUT_FOLDER_NAME)).getAbsolutePath() + File.separator
+                + tmpSpecificOutputFolderName + File.separator;
         File tmpOutputFolderFile = new File(tmpOutputFolderPath);
         if (!tmpOutputFolderFile.exists()) {
             tmpOutputFolderFile.mkdirs();
@@ -191,7 +237,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         try {
             tmpLogFileHandler = new FileHandler(tmpOutputFolderPath + "Log.txt");
         } catch (IOException anIOException) {
-            tmpLogger.log(Level.SEVERE, anIOException.toString(), anIOException);
+            GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anIOException.toString(), anIOException);
             System.out.println("An exception occurred while setting up the log file. Logging will be done in default configuration.");
         }
         tmpLogFileHandler.setLevel(Level.ALL);
@@ -204,11 +250,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         tmpRatioOutputFormat.setMaximumFractionDigits(1);
         tmpRatioOutputFormat.setRoundingMode(RoundingMode.DOWN);
 
-        DepictionGenerator tmpDepictionGenerator = new DepictionGenerator();
-        //tmpDepictionGenerator.depict(tmpMolecule).writeTo(tmpOutputFolderPath + File.separator + tmpID + ".png");
-
-        //Done for reproducibility
         SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
 
         Document tmpCurrentDoc = null;
         String tmpID = "";
@@ -266,7 +309,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         int tmpHasCircularAndLinearSugarsCounter = 0;
         List<String> tmpHasCircularAndLinearSugarsCNPs = new ArrayList(2000);
 
-        int tmpBasicallyASugarCounter = 0; //number of molecules that are basically sugars, circular or linear, polymer or single unit
+        //number of molecules that are basically sugars, circular or linear, polymer or single unit
+        int tmpBasicallyASugarCounter = 0;
         List<String> tmpBasicallyASugarCNPs = new ArrayList(2000);
         int tmpBasicallyACircularSugarCounter = 0;
         List<String> tmpBasicallyACircularSugarCNPs = new ArrayList(2000);
@@ -314,8 +358,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
 
                 tmpCurrentDoc = tmpCursor.next();
                 tmpMoleculesCounter++;
-                tmpID = tmpCurrentDoc.getString("inchikey"); //coconut_id or inchikey
-                tmpSmilesCode = tmpCurrentDoc.getString("smiles"); //smiles or clean_smiles
+                tmpID = tmpCurrentDoc.getString(GlycosylationStatisticsTest.ID_KEY);
+                tmpSmilesCode = tmpCurrentDoc.getString(GlycosylationStatisticsTest.SMILES_CODE_KEY);
                 tmpMolecule = tmpSmiPar.parseSmiles(tmpSmilesCode);
                 tmpMolecule.setTitle(tmpID);
 
@@ -733,7 +777,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 //</editor-fold>
 
             } catch (Exception anException) {
-                tmpLogger.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
+                GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                 tmpExceptionsCounter++;
             }
 
@@ -931,35 +975,25 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     }
 
     /**
+     * TODO
      *
      * @throws Exception
      */
     @Ignore
     @Test
     public void linearSugarPatternsAppearanceTest() throws Exception {
-        MongoClientSettings.Builder tmpBuilder = MongoClientSettings.builder();
-        ServerAddress tmpAddress = new ServerAddress("localhost", 27017);
-        tmpBuilder.applyToClusterSettings(builder -> builder.hosts(Collections.singletonList(tmpAddress)));
-        MongoClientSettings tmpSettings = tmpBuilder.build();
-        MongoClient tmpMongoClient = MongoClients.create(tmpSettings);
-        String tmpCollectionName = "COCONUTmay";
-        MongoDatabase tmpDatabase = tmpMongoClient.getDatabase(tmpCollectionName);
-        String tmpDatabaseName = "uniqueNaturalProduct";
-        MongoCollection<Document> tmpCollection = tmpDatabase.getCollection(tmpDatabaseName);
         MongoCursor<Document> tmpCursor = null;
-        Logger tmpLogger = Logger.getLogger(GlycosylationStatisticsTest.class.getName());
         try {
-            tmpCursor = tmpCollection.find().iterator();
+            //prints to console if connection was successful
+            tmpCursor = this.getCOCONUTMongoCursorForIteration();
         } catch (MongoTimeoutException aMongoTimeoutException) {
-            tmpLogger.log(Level.SEVERE, aMongoTimeoutException.toString(), aMongoTimeoutException);
+            GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, aMongoTimeoutException.toString(), aMongoTimeoutException);
             System.out.println("Timed out while trying to connect to MongoDB. Test is ignored.");
             Assume.assumeTrue(false);
         }
-        System.out.println("Connection to MongoDB successful.");
-        System.out.println("Collection " + tmpCollectionName + " in database " + tmpDatabaseName + " is loaded.");
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
-        // to also test their appearance
+        //to also test their appearance
         tmpSugarRemovalUtil.setDetectLinearAcidicSugarsSetting(true);
         //Note: Here, additional molecules could be added to the list to also test them
         List<String> tmpLinearSugarsList = tmpSugarRemovalUtil.getLinearSugarPatternsList();
@@ -981,8 +1015,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             try {
                 tmpCurrentDoc = tmpCursor.next();
                 tmpMoleculeCounter++;
-                tmpID = tmpCurrentDoc.getString("coconut_id");
-                tmpSmilesCode = tmpCurrentDoc.getString("clean_smiles");
+                tmpID = tmpCurrentDoc.getString(GlycosylationStatisticsTest.ID_KEY);
+                tmpSmilesCode = tmpCurrentDoc.getString(GlycosylationStatisticsTest.SMILES_CODE_KEY);
                 tmpMolecule = tmpSmiPar.parseSmiles(tmpSmilesCode);
                 tmpMolecule.setTitle(tmpID);
                 boolean tmpMolHasAMatch = false;
@@ -997,7 +1031,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                     tmpContainsLinearSugarCounter++;
                 }
             } catch (Exception anException) {
-                tmpLogger.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
+                GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                 continue;
             }
         }
@@ -1011,7 +1045,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     }
 
     /**
-     * TODO: Check whether the sugars or sugar-containing molecules in ZINC are in COCONUT
+     * TODO
      */
     @Ignore
     @Test
@@ -1020,14 +1054,14 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         File tmpZincSDFile = new File(tmpClassLoader.getResource("zinc-all-for-sale.sdf").getFile());
         System.out.println(tmpZincSDFile.getAbsolutePath());
         Logger tmpLogger = Logger.getLogger(GlycosylationStatisticsTest.class.getName());
-        String tmpOutputFolderPath = (new File("GlycosylationStatisticsTest_Output")).getAbsolutePath() + File.separator
-                + "zinc_inspection_test" + File.separator;
+        final String tmpSpecificOutputFolderName = "zinc_inspection_test";
+        String tmpOutputFolderPath = (new File(GlycosylationStatisticsTest.OUTPUT_FOLDER_NAME)).getAbsolutePath() + File.separator
+                + tmpSpecificOutputFolderName + File.separator;
         File tmpOutputFolderFile = new File(tmpOutputFolderPath);
         if (!tmpOutputFolderFile.exists()) {
             tmpOutputFolderFile.mkdirs();
         }
         System.out.println("Output directory: " + tmpOutputFolderPath);
-        //DepictionGenerator tmpDepictionGenerator = new DepictionGenerator();
         FileHandler tmpLogFileHandler = null;
         try {
             tmpLogFileHandler = new FileHandler(tmpOutputFolderPath + "Log.txt");
@@ -1041,19 +1075,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         Logger.getLogger("").setLevel(Level.WARNING);
         //Done for reproducibility
         SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
-        System.out.println(tmpSugarRemovalUtil.areOnlyCircularSugarsWithOGlycosidicBondDetected());
-        System.out.println(tmpSugarRemovalUtil.areOnlyTerminalSugarsRemoved());
-        System.out.println(tmpSugarRemovalUtil.getPreservationModeSetting());
-        System.out.println(tmpSugarRemovalUtil.getPreservationModeThresholdSetting());
-        System.out.println(tmpSugarRemovalUtil.areOnlyCircularSugarsWithEnoughExocyclicOxygenAtomsDetected());
-        System.out.println(tmpSugarRemovalUtil.getExocyclicOxygenAtomsToAtomsInRingRatioThresholdSetting());
-        System.out.println(tmpSugarRemovalUtil.areLinearSugarsInRingsDetected());
-        System.out.println(tmpSugarRemovalUtil.arePropertiesAddedToSugarContainingMolecules());
-        System.out.println(tmpSugarRemovalUtil.getLinearSugarCandidateMinSizeSetting());
-        System.out.println(tmpSugarRemovalUtil.getLinearSugarCandidateMaxSizeSetting());
-        System.out.println(tmpSugarRemovalUtil.areLinearAcidicSugarsDetected());
+        tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         IteratingSDFReader tmpReader = new IteratingSDFReader(new FileInputStream(tmpZincSDFile), DefaultChemObjectBuilder.getInstance(), true);
-        SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         int tmpMoleculeCounter = 0;
         int tmpExceptionsCounter = 0;
         int tmpSugarContainingMoleculesCounter = 0;
@@ -1069,21 +1092,12 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 tmpMoleculeCounter++;
                 tmpMolecule = tmpSugarRemovalUtil.removeCircularAndLinearSugars(tmpMolecule, true);
                 if ((boolean)tmpMolecule.getProperty(SugarRemovalUtility.CONTAINS_SUGAR_PROPERTY_KEY) == true) {
-                    //tmpDepictionGenerator.depict(tmpMolecule).writeTo(tmpOutputFolderPath + File.separator + tmpID + ".png");
-                    //tmpDepictionGenerator.depict(tmpMolecule).writeTo(tmpOutputFolderPath + File.separator + tmpID + "_1.png");
                     tmpSugarContainingMoleculesCounter++;
                     if ((boolean)tmpMolecule.getProperty(SugarRemovalUtility.CONTAINS_CIRCULAR_SUGAR_PROPERTY_KEY) == true) {
                         tmpContainsCircularSugarsCounter++;
                     }
                     if ((boolean)tmpMolecule.getProperty(SugarRemovalUtility.CONTAINS_LINEAR_SUGAR_PROPERTY_KEY) == true) {
-                        //tmpDepictionGenerator.depict(tmpSmiPar.parseSmiles(tmpSmilesCode)).writeTo(tmpOutputFolderPath + File.separator + tmpID + ".png");
-                        //tmpDepictionGenerator.depict(tmpMolecule).writeTo(tmpOutputFolderPath + File.separator + tmpID + "_1.png");
                         tmpContainsLinearSugarsCounter++;
-                    }
-                    if ((boolean)tmpMolecule.getProperty(SugarRemovalUtility.CONTAINS_CIRCULAR_SUGAR_PROPERTY_KEY) == true
-                            && (boolean)tmpMolecule.getProperty(SugarRemovalUtility.CONTAINS_LINEAR_SUGAR_PROPERTY_KEY) == true) {
-                        //tmpDepictionGenerator.depict(tmpSmiPar.parseSmiles(tmpSmilesCode)).writeTo(tmpOutputFolderPath + File.separator + tmpID + ".png");
-                        //tmpDepictionGenerator.depict(tmpMolecule).writeTo(tmpOutputFolderPath + File.separator + tmpID + "_1.png");
                     }
                     if (tmpMolecule.isEmpty()) {
                         tmpBasicallyASugarCounter++;
@@ -1103,6 +1117,101 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         System.out.println("Circular-sugar-containing molecules counter: " + tmpContainsCircularSugarsCounter);
         System.out.println("Basically a sugar counter: " + tmpBasicallyASugarCounter);
         tmpReader.close();
+    }
+
+    /**
+     * TODO
+     */
+    @Ignore
+    @Test
+    public void coconutSdfTest() throws Exception {
+        ClassLoader tmpClassLoader = this.getClass().getClassLoader();
+        File tmpSDFile = new File(tmpClassLoader.getResource("COCONUT_DB_august_17.sdf").getFile());
+        System.out.println(tmpSDFile.getAbsolutePath());
+        Logger tmpLogger = Logger.getLogger(GlycosylationStatisticsTest.class.getName());
+        final String tmpSpecificOutputFolderName = "coconut_sdf_test";
+        String tmpOutputFolderPath = (new File(GlycosylationStatisticsTest.OUTPUT_FOLDER_NAME)).getAbsolutePath() + File.separator
+                + tmpSpecificOutputFolderName + File.separator;
+        File tmpOutputFolderFile = new File(tmpOutputFolderPath);
+        if (!tmpOutputFolderFile.exists()) {
+            tmpOutputFolderFile.mkdirs();
+        }
+        System.out.println("Output directory: " + tmpOutputFolderPath);
+        FileHandler tmpLogFileHandler = null;
+        try {
+            tmpLogFileHandler = new FileHandler(tmpOutputFolderPath + "Log.txt");
+        } catch (IOException anIOException) {
+            tmpLogger.log(Level.SEVERE, anIOException.toString(), anIOException);
+            System.out.println("An exception occurred while setting up the log file. Logging will be done in default configuration.");
+        }
+        tmpLogFileHandler.setLevel(Level.ALL);
+        tmpLogFileHandler.setFormatter(new SimpleFormatter());
+        Logger.getLogger("").addHandler(tmpLogFileHandler);
+        Logger.getLogger("").setLevel(Level.WARNING);
+        //Done for reproducibility
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
+        IteratingSDFReader tmpReader = new IteratingSDFReader(new FileInputStream(tmpSDFile), DefaultChemObjectBuilder.getInstance(), true);
+        int tmpMoleculeCounter = 0;
+        int tmpExceptionsCounter = 0;
+        int tmpSugarContainingMoleculesCounter = 0;
+        int tmpContainsLinearSugarsCounter = 0;
+        int tmpContainsCircularSugarsCounter = 0;
+        int tmpBasicallyASugarCounter = 0;
+        IAtomContainer tmpMolecule = null;
+        String tmpID = null;
+        while (tmpReader.hasNext()) {
+            try {
+                tmpMolecule = tmpReader.next();
+                tmpID = tmpMolecule.getProperty(GlycosylationStatisticsTest.ID_KEY);
+                tmpMoleculeCounter++;
+                tmpMolecule = tmpSugarRemovalUtil.removeCircularAndLinearSugars(tmpMolecule, true);
+                if ((boolean)tmpMolecule.getProperty(SugarRemovalUtility.CONTAINS_SUGAR_PROPERTY_KEY) == true) {
+                    tmpSugarContainingMoleculesCounter++;
+                    if ((boolean)tmpMolecule.getProperty(SugarRemovalUtility.CONTAINS_CIRCULAR_SUGAR_PROPERTY_KEY) == true) {
+                        tmpContainsCircularSugarsCounter++;
+                    }
+                    if ((boolean)tmpMolecule.getProperty(SugarRemovalUtility.CONTAINS_LINEAR_SUGAR_PROPERTY_KEY) == true) {
+                        tmpContainsLinearSugarsCounter++;
+                    }
+                    if (tmpMolecule.isEmpty()) {
+                        tmpBasicallyASugarCounter++;
+                    }
+                }
+            } catch (Exception anException) {
+                tmpLogger.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
+                tmpExceptionsCounter++;
+                continue;
+            }
+        }
+        System.out.println("Done.");
+        System.out.println("Molecules counter: " + tmpMoleculeCounter);
+        System.out.println("Exceptions counter: " + tmpExceptionsCounter);
+        System.out.println("Sugar-containing molecules counter: " + tmpSugarContainingMoleculesCounter);
+        System.out.println("Linear-sugar-containing molecules counter: " + tmpContainsLinearSugarsCounter);
+        System.out.println("Circular-sugar-containing molecules counter: " + tmpContainsCircularSugarsCounter);
+        System.out.println("Basically a sugar counter: " + tmpBasicallyASugarCounter);
+        tmpReader.close();
+    }
+    //</editor-fold>
+    //
+    //<editor-fold desc="Private methods">
+    /**
+     * TODO
+     */
+    private MongoCursor<Document> getCOCONUTMongoCursorForIteration() throws MongoTimeoutException {
+        MongoClientSettings.Builder tmpBuilder = MongoClientSettings.builder();
+        ServerAddress tmpAddress = new ServerAddress(GlycosylationStatisticsTest.HOST, GlycosylationStatisticsTest.PORT);
+        tmpBuilder.applyToClusterSettings(builder -> builder.hosts(Collections.singletonList(tmpAddress)));
+        MongoClientSettings tmpSettings = tmpBuilder.build();
+        MongoClient tmpMongoClient = MongoClients.create(tmpSettings);
+        MongoDatabase tmpDatabase = tmpMongoClient.getDatabase(GlycosylationStatisticsTest.DATABASE_NAME);
+        MongoCollection<Document> tmpCollection = tmpDatabase.getCollection(GlycosylationStatisticsTest.COLLECTION_NAME);
+        MongoCursor<Document> tmpCursor = null;
+        tmpCursor = tmpCollection.find().iterator();
+        System.out.println("Connection to MongoDB successful.");
+        System.out.println("Collection " + tmpCollection.getNamespace().getCollectionName() + " in database " + tmpDatabase.getName() + " is loaded.");
+        return tmpCursor;
     }
     //</editor-fold>
 }
