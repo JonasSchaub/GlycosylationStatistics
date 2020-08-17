@@ -650,8 +650,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                         int tmpExocyclicOxygenAtomsCount = this.getExocyclicOxygenAtomCount(tmpCandidate, tmpMoleculeClone);
                         double tmpAttachedOxygensToAtomsInRingRatio =
                                 ((double) tmpExocyclicOxygenAtomsCount / (double) tmpRingSize);
-                        //note: the ratios are not rounded, the remaining decimals are neglected, which is correct here
-                        // because the respective setting is a threshold
+                        //note: the ratios are not rounded, the remaining decimals are neglected (rounding mode 'down'),
+                        // which is correct here because the respective setting is a threshold
                         String tmpRoundedRatio = tmpRatioOutputFormat.format(tmpAttachedOxygensToAtomsInRingRatio);
                         if (!tmpFrequenciesOfAttachedExocyclicOxygenAtomsRatiosMap.containsKey(tmpRoundedRatio)) {
                             tmpFrequenciesOfAttachedExocyclicOxygenAtomsRatiosMap.put(tmpRoundedRatio, 1);
