@@ -26,7 +26,6 @@ package de.unijena.cheminf.deglycosylation.stats;
 
 /**
  * TODO:
- * - revise number of detected linear sugars in rings that got lost through the removal of circular sugars
  * - write doc
  * - Redo statistics with new COCONUT version and new algo (also ZINC)
  * - update histograms
@@ -939,7 +938,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         int tmpLinearSugarMoietiesInRingsCounter = 0;
         HashMap<Integer, Integer> tmpFrequenciesOfHeavyAtomCountsOfLinearSugarMoietiesMap = new HashMap<>(10, 0.9f);
         HashMap<Integer, Integer> tmpFrequenciesOfCarbonAtomCountsOfLinearSugarMoietiesMap = new HashMap<>(10, 0.9f);
-        int tmpLinearSugarsDetectedInCircularSugarsCounter = 0;
+        int tmpLinSugInRingsLostInRemovalOfCircSugCounter = 0;
+        int tmpLinSugLostInRemovalOfCircSugCounter = 0;
         while (tmpCursor.hasNext()) {
             tmpID = "[unidentified]";
             try {
@@ -994,6 +994,20 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                     if (tmpNumberOfNonTerminalLinearSugarMoieties > 0) {
                         tmpNonTerminalLinearSugarMoietiesCounter += tmpNumberOfNonTerminalLinearSugarMoieties;
                     }
+                    //Testing for linear sugar candidates that get lost through the removal of circular sugars;
+                    // NOT including those in circles, see below
+                    IAtomContainer tmpNewClone = tmpMolecule.clone();
+                    //leaving default!
+                    tmpSugarRemovalUtil.setRemoveOnlyTerminalSugarsSetting(false);
+                    tmpSugarRemovalUtil.removeCircularSugars(tmpNewClone, false);
+                    List<IAtomContainer> tmpLinearCandidates = tmpSugarRemovalUtil.getLinearSugarCandidates(tmpNewClone);
+                    int tmpLinSugLostInRemovalOfCircSug = tmpNumberOfLinearSugarMoieties - tmpLinearCandidates.size();
+                    if (tmpLinSugLostInRemovalOfCircSug < 0) {
+                        throw new Exception();
+                    }
+                    tmpLinSugLostInRemovalOfCircSugCounter += tmpLinSugLostInRemovalOfCircSug;
+                    //restoring default!
+                    tmpSugarRemovalUtil.setRemoveOnlyTerminalSugarsSetting(true);
                 }
                 //leaving default settings!
                 tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(true);
@@ -1018,10 +1032,9 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                     tmpLinearCandidates = tmpSugarRemovalUtil.getLinearSugarCandidates(tmpNewClone);
                     tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(true);
                     tmpListSizeWithoutCandidatesInCycles = tmpLinearCandidates.size();
-                    //TODO: revise!
                     int tmpNumberOfLinearSugarsInCyclesWithoutCircularSugars = tmpListSizeWithCandidatesInCycles - tmpListSizeWithoutCandidatesInCycles;
-                    int tmpLinearSugarsThatWereDetectedInCircularSugars = tmpNumberOfLinearSugarsInCycles - tmpNumberOfLinearSugarsInCyclesWithoutCircularSugars;
-                    tmpLinearSugarsDetectedInCircularSugarsCounter += tmpLinearSugarsThatWereDetectedInCircularSugars;
+                    int tmpLinSugInRingsLostInRemovalOfCircSug = tmpNumberOfLinearSugarsInCycles - tmpNumberOfLinearSugarsInCyclesWithoutCircularSugars;
+                    tmpLinSugInRingsLostInRemovalOfCircSugCounter += tmpLinSugInRingsLostInRemovalOfCircSug;
                     //back to this default
                     tmpSugarRemovalUtil.setRemoveOnlyTerminalSugarsSetting(true);
                 }
@@ -1047,10 +1060,14 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         tmpOutputWriter.println("Detected non-terminal linear sugar moieties counter: " + tmpNonTerminalLinearSugarMoietiesCounter);
         System.out.println("Detected linear sugar moieties that are part of rings counter: " + tmpLinearSugarMoietiesInRingsCounter);
         tmpOutputWriter.println("Detected linear sugar moieties that are part of rings counter: " + tmpLinearSugarMoietiesInRingsCounter);
+        System.out.println("Number of detected linear sugars that got lost through " +
+                "the removal of circular sugars counter: " + tmpLinSugLostInRemovalOfCircSugCounter);
+        tmpOutputWriter.println("Number of detected linear sugars that got lost through " +
+                "the removal of circular sugars counter: " + tmpLinSugLostInRemovalOfCircSugCounter);
         System.out.println("Number of detected linear sugars in rings that got lost through the removal of circular " +
-                "sugars counter: " + tmpLinearSugarsDetectedInCircularSugarsCounter);
+                "sugars counter: " + tmpLinSugInRingsLostInRemovalOfCircSugCounter);
         tmpOutputWriter.println("Number of detected linear sugars in rings that got lost through the removal of circular " +
-                "sugars counter: " + tmpLinearSugarsDetectedInCircularSugarsCounter);
+                "sugars counter: " + tmpLinSugInRingsLostInRemovalOfCircSugCounter);
         System.out.println();
         tmpOutputWriter.println();
         System.out.println("Size (= heavy atom count) frequency distribution of linear sugars: ");
