@@ -26,11 +26,15 @@ package de.unijena.cheminf.deglycosylation.stats;
 
 /**
  * TODO:
+ * - update the MongoDB COCONUT version!
+ * - put separator for csv in shared static final constant
  * - write doc
- * - Redo statistics with new COCONUT version and new algo (also ZINC)
- * - update histograms
+ * - Redo statistics with new COCONUT version (also ZINC)
+ * - update histograms (again?)
  * - test whether the sugar-containing molecules in ZINC are NPs or are actually also part of COCONUT
  * - study the removed sugars further? Collect them and their frequency?
+ * - Add more stats, e.g. found spiro sugars?
+ * - subdivide the detected linear sugars in rings somehow, this number is odd!
  */
 
 import com.mongodb.MongoClientSettings;
@@ -102,6 +106,11 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
      * Collection from the database to load
      */
     private static final String COLLECTION_NAME = "uniqueNaturalProduct";
+
+    /**
+     *
+     */
+    private static final String SDF_NAME = "COCONUT_DB_september_09.sdf";
 
     /**
      * Name of the output folder
@@ -1873,6 +1882,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
      *
      * @throws Exception if anything goes wrong
      */
+    @Ignore
     @Test
     public void linearSugarPatternsAppearanceTest() throws Exception {
         MongoCursor<Document> tmpCursor = null;
@@ -1967,6 +1977,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
      *
      * @throws Exception if anything goes wrong
      */
+    @Ignore
     @Test
     public void zincStatsBasicsTest() throws Exception {
         ClassLoader tmpClassLoader = this.getClass().getClassLoader();
@@ -2094,12 +2105,13 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
      *
      * @throws Exception if anything goes wrong
      */
+    //@Ignore
     @Test
     public void coconutSdfTest() throws Exception {
         ClassLoader tmpClassLoader = this.getClass().getClassLoader();
         File tmpSDFile = null;
         try {
-            tmpSDFile = new File(tmpClassLoader.getResource("COCONUT_DB_august_17.sdf").getFile());
+            tmpSDFile = new File(tmpClassLoader.getResource(GlycosylationStatisticsTest.SDF_NAME).getFile());
         } catch (NullPointerException aNullPointerException) {
             GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, aNullPointerException.toString(), aNullPointerException);
             System.out.println("COCONUT SDF could not be found. Test is ignored.");
@@ -2221,12 +2233,13 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
      *
      * @throws Exception if anything goes wrong
      */
+    //@Ignore
     @Test
     public void findMoleculesMissingInSDFTest() throws Exception {
         ClassLoader tmpClassLoader = this.getClass().getClassLoader();
         File tmpSDFile = null;
         try {
-            tmpSDFile = new File(tmpClassLoader.getResource("COCONUT_DB_august_17.sdf").getFile());
+            tmpSDFile = new File(tmpClassLoader.getResource(GlycosylationStatisticsTest.SDF_NAME).getFile());
         } catch (NullPointerException aNullPointerException) {
             GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, aNullPointerException.toString(), aNullPointerException);
             System.out.println("COCONUT SDF could not be found. Test is ignored.");
