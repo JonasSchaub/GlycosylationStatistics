@@ -26,11 +26,10 @@ package de.unijena.cheminf.deglycosylation.stats;
 
 /**
  * TODO:
- * - update the MongoDB COCONUT version!
+ * - Redo statistics with new COCONUT version
+ * - update histograms (again?)
  * - put separator for csv in shared static final constant
  * - write doc
- * - Redo statistics with new COCONUT version (also ZINC)
- * - update histograms (again?)
  * - test whether the sugar-containing molecules in ZINC are NPs or are actually also part of COCONUT
  * - study the removed sugars further? Collect them and their frequency?
  * - Add more stats, e.g. found spiro sugars?
@@ -100,7 +99,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     /**
      * Name of the MongoDB database
      */
-    private static final String DATABASE_NAME = "COCONUTaugust17";
+    private static final String DATABASE_NAME = "COCONUT2020september09";
 
     /**
      * Collection from the database to load
@@ -497,7 +496,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         tmpOutputWriter.println(tmpPercentage + " % of molecules contain circular sugars.");
         System.out.println("Only circular sugar containing molecules counter: " + tmpHasOnlyCircularSugarsCounter);
         tmpOutputWriter.println("Only circular sugar containing molecules counter: " + tmpHasOnlyCircularSugarsCounter);
-        System.out.println("The remaining " + (tmpHasCircularSugarsCounter - tmpHasOnlyCircularSugarsCounter) + "molecules " +
+        System.out.println("The remaining " + (tmpHasCircularSugarsCounter - tmpHasOnlyCircularSugarsCounter) + " molecules " +
                 " contain circular sugars and also linear sugar moieties.");
         tmpOutputWriter.println("The remaining " + (tmpHasCircularSugarsCounter - tmpHasOnlyCircularSugarsCounter) + "molecules " +
                 "contain circular sugars and also linear sugar moieties.");
@@ -1882,7 +1881,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
      *
      * @throws Exception if anything goes wrong
      */
-    @Ignore
+    //@Ignore
     @Test
     public void linearSugarPatternsAppearanceTest() throws Exception {
         MongoCursor<Document> tmpCursor = null;
@@ -2105,7 +2104,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
      *
      * @throws Exception if anything goes wrong
      */
-    //@Ignore
+    @Ignore
     @Test
     public void coconutSdfTest() throws Exception {
         ClassLoader tmpClassLoader = this.getClass().getClassLoader();
