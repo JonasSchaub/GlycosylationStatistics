@@ -25,17 +25,10 @@
 package de.unijena.cheminf.deglycosylation;
 
 /**
- * Future perspectives / ideas:
- * - investigate use of Ertl algorithm for detection of initial candidates, maybe all C-O FG with a ratio of C to O?
- * - investigate use of SMARTS pattern for detection of initial candidates (maybe with explicit Hs to avoid matching cross-linked structures)
- * - Is it possible with DfPattern to get the first match of the biggest pattern and then exclude the matched atoms
- *   for the next matching and so on?
- * - maintain connection info for reconstruction?
- * - replace isomorphism testing with hash codes or the ids for substructures (for better performance)?
- * - Circular and linear sugar candidates can no longer overlap in any case, right? Therefore, a
- *   'getCircularAndLinearSugarCandidates()' method could be implemented and used safely and
- *   'removeAndReturnCircularAndLinearSugars()' could be revised
- * - include all connected oxygen atoms in the circular sugars? Or at least all hydroxy groups?
+ * IMPORTANT NOTE: This is a copy of
+ * https://github.com/JonasSchaub/SugarRemoval/blob/master/src/main/java/de/unijena/cheminf/deglycosylation/SugarRemovalUtility.java
+ * Therefore, do not make any changes here but in the original repository!
+ * Last copied on August 17th 2020
  */
 
 import org.openscience.cdk.AtomContainer;
