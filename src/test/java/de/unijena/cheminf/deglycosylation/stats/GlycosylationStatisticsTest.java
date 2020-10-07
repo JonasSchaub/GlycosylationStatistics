@@ -29,7 +29,7 @@ package de.unijena.cheminf.deglycosylation.stats;
  * - write doc
  * - update ZINC
  * - test whether the sugar-containing molecules in ZINC are NPs or are actually also part of COCONUT (really, how?)
- * - Add more stats, e.g. found spiro sugars?
+ * - Add more stats, any ideas??
  * - subdivide the detected linear sugars in rings somehow, this number is odd! By size? By size of the rings they are part of?
  * - include only needed CDK modules
  */
@@ -48,12 +48,14 @@ import org.junit.Test;
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.depict.DepictionGenerator;
 import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.graph.GraphUtil;
 import org.openscience.cdk.hash.HashGeneratorMaker;
 import org.openscience.cdk.hash.MoleculeHashGenerator;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.io.iterator.IteratingSDFReader;
 import org.openscience.cdk.isomorphism.DfPattern;
+import org.openscience.cdk.ringsearch.RingSearch;
 import org.openscience.cdk.smiles.SmiFlavor;
 import org.openscience.cdk.smiles.SmilesGenerator;
 import org.openscience.cdk.smiles.SmilesParser;
@@ -386,6 +388,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         List<String> tmpHasGlycosidicBondOnNonTerminalSugarCNPs = new ArrayList<>(50000);
         int tmpGlycosidicBondExemptionCounter = 0;
         List<String> tmpGlycosidicBondExemptionCNPs = new ArrayList<>(120);
+        int tmpHasSpiroSugarCounter = 0;
+        List<String> tmpHasSpiroSugarCNPs = new ArrayList<>(100);
         while (tmpCursor.hasNext()) {
             tmpID = "[unidentified]";
             try {
@@ -476,6 +480,19 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                         }
                     }
                 }
+                tmpSugarRemovalUtil.setDetectSpiroRingsAsCircularSugarsSetting(true);
+                boolean tmpHasCircularSugarsIncludingSpiro = tmpSugarRemovalUtil.hasCircularSugars(tmpMolecule);
+                if (tmpHasCircularSugarsIncludingSpiro) {
+                    int tmpCircularCandidateNumberInlcudingSpiro = tmpSugarRemovalUtil.getNumberOfCircularSugars(tmpMolecule);
+                    tmpSugarRemovalUtil.setDetectSpiroRingsAsCircularSugarsSetting(false);
+                    int tmpCircularCandidateNumberExcludingSpiro = tmpSugarRemovalUtil.getNumberOfCircularSugars(tmpMolecule);
+                    Assert.assertTrue(tmpCircularCandidateNumberExcludingSpiro <= tmpCircularCandidateNumberInlcudingSpiro);
+                    if (tmpCircularCandidateNumberInlcudingSpiro > tmpCircularCandidateNumberExcludingSpiro) {
+                        tmpHasSpiroSugarCounter++;
+                        tmpHasSpiroSugarCNPs.add(tmpID);
+                    }
+                }
+                tmpSugarRemovalUtil.setDetectSpiroRingsAsCircularSugarsSetting(false);
             } catch (Exception anException) {
                 GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                 tmpExceptionsCounter++;
@@ -532,6 +549,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         tmpOutputWriter.println(tmpHasBoth + " molecules have both, terminal and non-terminal sugar moieties attached via a glycosidic bond.");
         System.out.println("Molecules that qualify for the glycosidic bond exemption counter: " + tmpGlycosidicBondExemptionCounter);
         tmpOutputWriter.println("Molecules that qualify for the glycosidic bond exemption counter: " + tmpGlycosidicBondExemptionCounter);
+        System.out.println("Molecules that have spiro sugars counter: " + tmpHasSpiroSugarCounter);
+        tmpOutputWriter.println("Molecules that have spiro sugars counter: " + tmpHasSpiroSugarCounter);
         tmpOutputWriter.println();
         tmpOutputWriter.println("Circular sugar containing molecules: " + tmpHasCircularSugarsCNPs);
         tmpOutputWriter.println();
@@ -554,6 +573,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         tmpOutputWriter.println("Non-terminal circular sugar with glycosidic bond containing molecules: " + tmpHasGlycosidicBondOnNonTerminalSugarCNPs);
         tmpOutputWriter.println();
         tmpOutputWriter.println("Molecules that qualify for the glycosidic bond exemption: " + tmpGlycosidicBondExemptionCNPs);
+        tmpOutputWriter.println();
+        tmpOutputWriter.println("Molecules that have spiro sugars: " + tmpHasSpiroSugarCNPs);
         tmpOutputWriter.flush();
         tmpCursor.close();
         tmpOutputWriter.close();
@@ -942,10 +963,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         int tmpLinearSugarMoietiesCounter = 0;
         int tmpTerminalLinearSugarMoietiesCounter = 0;
         int tmpNonTerminalLinearSugarMoietiesCounter = 0;
-        int tmpLinearSugarMoietiesInRingsCounter = 0;
         HashMap<Integer, Integer> tmpFrequenciesOfHeavyAtomCountsOfLinearSugarMoietiesMap = new HashMap<>(10, 0.9f);
         HashMap<Integer, Integer> tmpFrequenciesOfCarbonAtomCountsOfLinearSugarMoietiesMap = new HashMap<>(10, 0.9f);
-        int tmpLinSugInRingsLostInRemovalOfCircSugCounter = 0;
         int tmpLinSugLostInRemovalOfCircSugCounter = 0;
         while (tmpCursor.hasNext()) {
             tmpID = "[unidentified]";
@@ -1016,37 +1035,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                     //restoring default!
                     tmpSugarRemovalUtil.setRemoveOnlyTerminalSugarsSetting(true);
                 }
-                //leaving default settings!
-                tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(true);
-                IAtomContainer tmpNewClone = tmpMolecule.clone();
-                List<IAtomContainer> tmpLinearCandidates = tmpSugarRemovalUtil.getLinearSugarCandidates(tmpNewClone);
-                int tmpListSizeWithCandidatesInCycles = tmpLinearCandidates.size();
-                if (tmpListSizeWithCandidatesInCycles > 0) {
-                    tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(false);
-                    tmpLinearCandidates = tmpSugarRemovalUtil.getLinearSugarCandidates(tmpNewClone);
-                    tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(true);
-                    int tmpListSizeWithoutCandidatesInCycles = tmpLinearCandidates.size();
-                    int tmpNumberOfLinearSugarsInCycles = tmpListSizeWithCandidatesInCycles - tmpListSizeWithoutCandidatesInCycles;
-                    if (tmpNumberOfLinearSugarsInCycles > 0) {
-                        tmpLinearSugarMoietiesInRingsCounter += tmpNumberOfLinearSugarsInCycles;
-                    }
-                    //leaving default further!
-                    tmpSugarRemovalUtil.setRemoveOnlyTerminalSugarsSetting(false);
-                    tmpSugarRemovalUtil.removeCircularSugars(tmpNewClone, false);
-                    tmpLinearCandidates = tmpSugarRemovalUtil.getLinearSugarCandidates(tmpNewClone);
-                    tmpListSizeWithCandidatesInCycles = tmpLinearCandidates.size();
-                    tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(false);
-                    tmpLinearCandidates = tmpSugarRemovalUtil.getLinearSugarCandidates(tmpNewClone);
-                    tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(true);
-                    tmpListSizeWithoutCandidatesInCycles = tmpLinearCandidates.size();
-                    int tmpNumberOfLinearSugarsInCyclesWithoutCircularSugars = tmpListSizeWithCandidatesInCycles - tmpListSizeWithoutCandidatesInCycles;
-                    int tmpLinSugInRingsLostInRemovalOfCircSug = tmpNumberOfLinearSugarsInCycles - tmpNumberOfLinearSugarsInCyclesWithoutCircularSugars;
-                    tmpLinSugInRingsLostInRemovalOfCircSugCounter += tmpLinSugInRingsLostInRemovalOfCircSug;
-                    //back to this default
-                    tmpSugarRemovalUtil.setRemoveOnlyTerminalSugarsSetting(true);
-                }
-                //back to default settings!
-                tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(false);
             } catch (Exception anException) {
                 GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                 tmpExceptionsCounter++;
@@ -1065,16 +1053,10 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         tmpOutputWriter.println("Detected terminal linear sugar moieties counter: " + tmpTerminalLinearSugarMoietiesCounter);
         System.out.println("Detected non-terminal linear sugar moieties counter: " + tmpNonTerminalLinearSugarMoietiesCounter);
         tmpOutputWriter.println("Detected non-terminal linear sugar moieties counter: " + tmpNonTerminalLinearSugarMoietiesCounter);
-        System.out.println("Detected linear sugar moieties that are part of rings counter: " + tmpLinearSugarMoietiesInRingsCounter);
-        tmpOutputWriter.println("Detected linear sugar moieties that are part of rings counter: " + tmpLinearSugarMoietiesInRingsCounter);
         System.out.println("Number of detected linear sugars that got lost through " +
                 "the removal of circular sugars counter: " + tmpLinSugLostInRemovalOfCircSugCounter);
         tmpOutputWriter.println("Number of detected linear sugars that got lost through " +
                 "the removal of circular sugars counter: " + tmpLinSugLostInRemovalOfCircSugCounter);
-        System.out.println("Number of detected linear sugars in rings that got lost through the removal of circular " +
-                "sugars counter: " + tmpLinSugInRingsLostInRemovalOfCircSugCounter);
-        tmpOutputWriter.println("Number of detected linear sugars in rings that got lost through the removal of circular " +
-                "sugars counter: " + tmpLinSugInRingsLostInRemovalOfCircSugCounter);
         System.out.println();
         tmpOutputWriter.println();
         System.out.println("Size (= heavy atom count) frequency distribution of linear sugars: ");
@@ -1136,6 +1118,162 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 + tmpNonTerminalLinearSugarMoietiesCounter);
         Assert.assertEquals(tmpLinearSugarMoietiesCounter, tmpTotalOfLinearSugars1);
         Assert.assertEquals(tmpLinearSugarMoietiesCounter, tmpTotalOfLinearSugars2);
+    }
+
+    /**
+     * TODO: Depict molecules with linear sugars in cycles highlighted.
+     */
+    @Test
+    public void coconutStatsLinearSugarMoietiesInRingsTest() throws Exception {
+        MongoCursor<Document> tmpCursor = null;
+        try {
+            //prints to console if connection was successful
+            tmpCursor = this.getCOCONUTMongoCursorForIteration();
+        } catch (MongoTimeoutException aMongoTimeoutException) {
+            GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, aMongoTimeoutException.toString(), aMongoTimeoutException);
+            System.out.println("Timed out while trying to connect to MongoDB. Test is ignored.");
+            Assume.assumeTrue(false);
+        }
+        final String tmpSpecificOutputFolderName = "coconut_stats_linear_sugar_moieties_in_rings_test";
+        //Prints output folder to console
+        String tmpOutputFolderPath = this.initializeOutputFolderAndLogger(tmpSpecificOutputFolderName);
+        PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
+        //TODO
+        PrintWriter tmpCSVWriter = this.initializeOutputFile(tmpOutputFolderPath, "LinSugarsCarbonAtomCountFrequencies.csv");
+        //All settings in default
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
+        SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+        Document tmpCurrentDoc;
+        String tmpID;
+        String tmpSmilesCode;
+        IAtomContainer tmpMolecule;
+        int tmpMoleculesCounter = 0;
+        int tmpExceptionsCounter = 0;
+        int tmpLinearSugarMoietiesInRingsCounter = 0;
+        int tmpLinearSugarMoietiesInRingsCounter2 = 0;
+        int tmpLinSugInRingsLostInRemovalOfCircSugCounter = 0;
+        List<String> tmpLinSugInRingsLostInRemovalOfCircSugCNPs = new ArrayList<>(60);
+        HashMap<Integer, Integer> tmpFrequenciesOfCarbonAtomCountsOfLinearSugarMoietiesMap = new HashMap<>(10, 0.9f);
+        while (tmpCursor.hasNext()) {
+            tmpID = "[unidentified]";
+            try {
+                tmpCurrentDoc = tmpCursor.next();
+                tmpMoleculesCounter++;
+                tmpID = tmpCurrentDoc.getString(GlycosylationStatisticsTest.ID_KEY);
+                tmpSmilesCode = tmpCurrentDoc.getString(GlycosylationStatisticsTest.SMILES_CODE_KEY);
+                tmpMolecule = tmpSmiPar.parseSmiles(tmpSmilesCode);
+                tmpMolecule.setTitle(tmpID);
+                //leaving default SRU settings
+                tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(true);
+                //note: per default, those too small or too big, and acidic linear sugars are not counted!
+                boolean tmpHasAnyLinearSugar = tmpSugarRemovalUtil.hasLinearSugars(tmpMolecule);
+                if (tmpHasAnyLinearSugar) {
+                    List<IAtomContainer> tmpLinearCandidatesIncludingCycles = tmpSugarRemovalUtil.getLinearSugarCandidates(tmpMolecule);
+                    int tmpListSizeWithCandidatesInCycles = tmpLinearCandidatesIncludingCycles.size();
+                    tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(false);
+                    List<IAtomContainer> tmpLinearCandidatesExcludingCycles = tmpSugarRemovalUtil.getLinearSugarCandidates(tmpMolecule);
+                    //so far not needed here
+                    //tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(true);
+                    int tmpListSizeWithoutCandidatesInCycles = tmpLinearCandidatesExcludingCycles.size();
+                    int tmpNumberOfLinearSugarsInCycles = tmpListSizeWithCandidatesInCycles - tmpListSizeWithoutCandidatesInCycles;
+                    Assert.assertTrue(tmpNumberOfLinearSugarsInCycles >= 0);
+                    //this will be the list of candidates that only get detected if cyclic atoms are included
+                    if (tmpNumberOfLinearSugarsInCycles > 0) {
+                        //System.out.println(tmpNumberOfLinearSugarsInCycles);
+                        tmpLinearSugarMoietiesInRingsCounter += tmpNumberOfLinearSugarsInCycles;
+                        List<IAtomContainer> tmpLinearCandidatesActuallyInRings = new ArrayList<>(tmpNumberOfLinearSugarsInCycles * 2);
+                        int[][] tmpAdjList = GraphUtil.toAdjList(tmpMolecule);
+                        RingSearch tmpRingSearch = new RingSearch(tmpMolecule, tmpAdjList);
+                        for (IAtomContainer tmpCandidate : tmpLinearCandidatesIncludingCycles) {
+                            for (IAtom tmpAtom : tmpCandidate.atoms()) {
+                                if (tmpRingSearch.cyclic(tmpAtom)) {
+                                    tmpLinearCandidatesActuallyInRings.add(tmpCandidate);
+                                    //move on with the next candidate
+                                    break;
+                                }
+                            }
+                        }
+                        //System.out.println(tmpLinearCandidatesActuallyInRings.size());
+                        /*for (int i = 0; i < tmpLinearCandidatesActuallyInRings.size(); i++) {
+                            IAtomContainer tmpCandidate = tmpLinearCandidatesActuallyInRings.get(i);
+                            int tmpCarbonAtomCountTotal = 0;
+                            int tmpCarbonAtomCountInRing = 0;
+                            for (IAtom tmpAtom : tmpCandidate.atoms()) {
+                                boolean tmpIsCarbon = tmpAtom.getSymbol().equals("C");
+                                boolean tmpIsCyclic = tmpRingSearch.cyclic(tmpAtom);
+                                if (tmpIsCarbon) {
+                                    tmpCarbonAtomCountTotal++;
+                                    if (tmpIsCyclic) {
+                                        tmpCarbonAtomCountInRing++;
+                                    }
+                                }
+                            }
+                            int tmpExocyclicCarbonAtomCount = tmpCarbonAtomCountTotal - tmpCarbonAtomCountInRing;
+                            if (tmpExocyclicCarbonAtomCount < tmpSugarRemovalUtil.getLinearSugarCandidateMinSizeSetting()) {
+                                tmpLinearCandidatesActuallyInRings.remove(i);
+                                i = i - 1;
+                            }
+                        }
+                        //System.out.println(tmpLinearCandidatesActuallyInRings.size());
+                        //System.out.println();*/
+                        tmpLinearSugarMoietiesInRingsCounter2 += tmpLinearCandidatesActuallyInRings.size();
+                        //Assert.assertTrue(tmpLinearCandidatesActuallyInRings.size() == tmpNumberOfLinearSugarsInCycles);
+                    }
+
+                    //leaving default further!
+                    tmpSugarRemovalUtil.setRemoveOnlyTerminalSugarsSetting(false);
+                    IAtomContainer tmpNewClone = tmpMolecule.clone();
+                    tmpSugarRemovalUtil.removeCircularSugars(tmpNewClone, false);
+                    tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(true);
+                    tmpLinearCandidatesIncludingCycles = tmpSugarRemovalUtil.getLinearSugarCandidates(tmpNewClone);
+                    tmpListSizeWithCandidatesInCycles = tmpLinearCandidatesIncludingCycles.size();
+                    tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(false);
+                    tmpLinearCandidatesExcludingCycles = tmpSugarRemovalUtil.getLinearSugarCandidates(tmpNewClone);
+                    tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(true);
+                    tmpListSizeWithoutCandidatesInCycles = tmpLinearCandidatesExcludingCycles.size();
+                    int tmpNumberOfLinearSugarsInCyclesWithoutCircularSugars = tmpListSizeWithCandidatesInCycles - tmpListSizeWithoutCandidatesInCycles;
+                    int tmpLinSugInRingsLostInRemovalOfCircSug = tmpNumberOfLinearSugarsInCycles - tmpNumberOfLinearSugarsInCyclesWithoutCircularSugars;
+                    Assert.assertTrue(tmpLinSugInRingsLostInRemovalOfCircSug >= 0);
+                    if (tmpLinSugInRingsLostInRemovalOfCircSug > 0) {
+                        tmpLinSugInRingsLostInRemovalOfCircSugCounter += tmpLinSugInRingsLostInRemovalOfCircSug;
+                        tmpLinSugInRingsLostInRemovalOfCircSugCNPs.add(tmpID);
+                    }
+                    //back to this default
+                    tmpSugarRemovalUtil.setRemoveOnlyTerminalSugarsSetting(true);
+                }
+                //back to default settings
+                tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(false);
+            } catch (Exception anException) {
+                GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
+                tmpExceptionsCounter++;
+                //continue;
+            }
+        }
+        System.out.println();
+        System.out.println("Done.");
+        System.out.println("Exceptions counter: " + tmpExceptionsCounter);
+        tmpOutputWriter.println("Exceptions counter: " + tmpExceptionsCounter);
+        System.out.println("Molecules counter: " + tmpMoleculesCounter);
+        tmpOutputWriter.println("Molecules counter: " + tmpMoleculesCounter);
+        //Note: these are moieties that were not detected while excluding circular atoms, so i.e. they are 'mainly' in rings
+        // other linear moieties might include circular atoms but be big enough to be detected without them
+        System.out.println("Detected linear sugar moieties that are part of rings counter: " + tmpLinearSugarMoietiesInRingsCounter);
+        tmpOutputWriter.println("Detected linear sugar moieties that are part of rings counter: " + tmpLinearSugarMoietiesInRingsCounter);
+        System.out.println("Detected linear sugar moieties that are part of rings counter: " + tmpLinearSugarMoietiesInRingsCounter2);
+        tmpOutputWriter.println("Detected linear sugar moieties that are part of rings counter: " + tmpLinearSugarMoietiesInRingsCounter2);
+        System.out.println("Number of detected linear sugars in rings that got lost through the removal of circular " +
+                "sugars counter: " + tmpLinSugInRingsLostInRemovalOfCircSugCounter);
+        tmpOutputWriter.println("Number of detected linear sugars in rings that got lost through the removal of circular " +
+                "sugars counter: " + tmpLinSugInRingsLostInRemovalOfCircSugCounter);
+        tmpOutputWriter.println();
+        tmpOutputWriter.println("Molecules that lost a linear sugar in a ring after removal of circular sugars: "
+                + tmpLinSugInRingsLostInRemovalOfCircSugCNPs);
+        tmpOutputWriter.flush();
+        tmpCSVWriter.flush();
+        tmpCursor.close();
+        tmpOutputWriter.close();
+        tmpCSVWriter.close();
     }
 
     /**
