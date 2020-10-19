@@ -2892,7 +2892,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         ClassLoader tmpClassLoader = this.getClass().getClassLoader();
         File tmpZincBiogenicSmilesFile = null;
         try {
-            tmpZincBiogenicSmilesFile = new File(tmpClassLoader.getResource("ZINC_biogenic_subset_2020_Okt_16.txt").getFile());
+            tmpZincBiogenicSmilesFile = new File(tmpClassLoader.getResource("ZINC_biogenic_subset_2020_Okt_17.txt").getFile());
         } catch (NullPointerException aNullPointerException) {
             GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, aNullPointerException.toString(), aNullPointerException);
             System.out.println("ZINC biogenic subset file could not be found. Test is ignored.");
@@ -2905,7 +2905,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
         FileReader tmpZincBiogenicSmilesFileReader = new FileReader(tmpZincBiogenicSmilesFile);
         BufferedReader tmpZincBiogenicSmilesBufferedReader = new BufferedReader(tmpZincBiogenicSmilesFileReader);
-        HashSet<String> tmpBiogenicSmilesSet = new HashSet<>(135400, 1); //135,335 molecules are in the dataset
+        HashSet<String> tmpBiogenicSmilesSet = new HashSet<>(308100, 1); //308,035 molecules are in the dataset
         String tmpNextLine = "";
         String tmpSmilesCode;
         String tmpID = "";
@@ -2918,13 +2918,18 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                     break;
                 }
                 tmpMoleculesCounter++;
-                if ((tmpMoleculesCounter % 1000) == 0) {
+                if ((tmpMoleculesCounter % 10000) == 0) {
                     System.out.println(tmpMoleculesCounter + " lines were processed already...");
                 }
                 String[] tmpSmilesCodeAndId = tmpNextLine.split(" ");
                 tmpSmilesCode = tmpSmilesCodeAndId[0];
                 tmpID = tmpSmilesCodeAndId[1];
-                tmpBiogenicSmilesSet.add(tmpSmilesCode);
+                if (tmpBiogenicSmilesSet.contains(tmpSmilesCode)) {
+                    System.out.println("SMILES code " + tmpSmilesCode + " with id " + tmpID + " appears multiple times in the data set.");
+                    tmpOutputWriter.println("SMILES code " + tmpSmilesCode + " with id " + tmpID + " appears multiple times in the data set.");
+                } else {
+                    tmpBiogenicSmilesSet.add(tmpSmilesCode);
+                }
             } catch (Exception anException) {
                 GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                 tmpExceptionsCounter++;
@@ -2936,14 +2941,16 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         System.out.println("Processing of the biogenic subset done.");
         System.out.println(tmpMoleculesCounter + " molecules were processed.");
         System.out.println(tmpExceptionsCounter + " exceptions occurred.");
+        System.out.println(tmpBiogenicSmilesSet.size() + " unique SMILES codes have been put into memory.");
         System.out.println("Loading and processing for-sale subset now...");
         tmpOutputWriter.println("Processing of the biogenic subset done.");
         tmpOutputWriter.println(tmpMoleculesCounter + " molecules were processed.");
         tmpOutputWriter.println(tmpExceptionsCounter + " exceptions occurred.");
+        tmpOutputWriter.println(tmpBiogenicSmilesSet.size() + " unique SMILES codes have been put into memory.");
         tmpOutputWriter.println("Loading and processing for-sale subset now...");
         File tmpZincForSaleSmilesFile = null;
         try {
-            tmpZincForSaleSmilesFile = new File(tmpClassLoader.getResource("ZINC_for-sale_subset_2020_Okt_16.txt").getFile());
+            tmpZincForSaleSmilesFile = new File(tmpClassLoader.getResource("ZINC_for-sale_subset_2020_Okt_[insert date here!].txt").getFile());
         } catch (NullPointerException aNullPointerException) {
             GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, aNullPointerException.toString(), aNullPointerException);
             System.out.println("ZINC for sale subset file could not be found. Test is ignored.");
@@ -2970,7 +2977,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                     break;
                 }
                 tmpMoleculesCounter++;
-                if ((tmpMoleculesCounter % 1000) == 0) {
+                if ((tmpMoleculesCounter % 10000) == 0) {
                     System.out.println(tmpMoleculesCounter + " lines were processed already...");
                 }
                 String[] tmpSmilesCodeAndId = tmpNextLine.split(" ");
