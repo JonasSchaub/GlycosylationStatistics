@@ -2767,7 +2767,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         ClassLoader tmpClassLoader = this.getClass().getClassLoader();
         File tmpZincSDFile = null;
         try {
-            tmpZincSDFile = new File(tmpClassLoader.getResource("zinc-all-for-sale.sdf").getFile());
+            tmpZincSDFile = new File(tmpClassLoader.getResource("ZINC_for-sale_without_biogenics.sdf").getFile());
         } catch (NullPointerException aNullPointerException) {
             GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, aNullPointerException.toString(), aNullPointerException);
             System.out.println("ZINC SDF could not be found. Test is ignored.");
@@ -2778,26 +2778,28 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         //Prints output folder to console
         String tmpOutputFolderPath = this.initializeOutputFolderAndLogger(tmpSpecificOutputFolderName);
         PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
+        PrintWriter tmpSugarContainingZINCMoleculesWriter = this.initializeOutputFile(tmpOutputFolderPath, "sugar-containing_ZINC_molecules.txt");
         //All settings in default
         SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
+        SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Unique);
         IteratingSDFReader tmpReader = new IteratingSDFReader(new FileInputStream(tmpZincSDFile), DefaultChemObjectBuilder.getInstance(), true);
         String tmpID;
         IAtomContainer tmpMolecule;
         int tmpMoleculesCounter = 0;
         int tmpExceptionsCounter = 0;
         int tmpHasAnyTypeOfSugarsCounter = 0;
-        List<String> tmpHasAnyTypeOfSugarsCNPs = new ArrayList<>(10000);
+        List<String> tmpHasAnyTypeOfSugarsIDs = new ArrayList<>(10000);
         int tmpHasNoSugarsCounter = 0;
-        //List<String> tmpHasNoSugarsCNPs = new ArrayList<>(3100000);
+        //List<String> tmpHasNoSugarsIDs = new ArrayList<>(3100000);
         int tmpHasCircularSugarsCounter = 0;
-        List<String> tmpHasCircularSugarsCNPs = new ArrayList<>(7500);
+        List<String> tmpHasCircularSugarsIDs = new ArrayList<>(7500);
         int tmpHasLinearSugarsCounter = 0;
-        List<String> tmpHasLinearSugarsCNPs = new ArrayList<>(2600);
+        List<String> tmpHasLinearSugarsIDs = new ArrayList<>(2600);
         int tmpHasCircularAndLinearSugarsCounter = 0;
-        List<String> tmpHasCircularAndLinearSugarsCNPs = new ArrayList<>(100);
+        List<String> tmpHasCircularAndLinearSugarsIDs = new ArrayList<>(100);
         int tmpBasicallyASugarCounter = 0;
-        List<String> tmpBasicallyASugarCNPs = new ArrayList<>(2000);
+        List<String> tmpBasicallyASugarIDs = new ArrayList<>(2000);
         while (tmpReader.hasNext()) {
             tmpID = "[unidentified]";
             try {
@@ -2813,23 +2815,26 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 boolean tmpHasAnyLinearSugar = tmpDeglycosylatedClone.getProperty(SugarRemovalUtility.CONTAINS_LINEAR_SUGAR_PROPERTY_KEY);
                 if (tmpHasAnyTypeOfSugar) {
                     tmpHasAnyTypeOfSugarsCounter++;
-                    tmpHasAnyTypeOfSugarsCNPs.add(tmpID);
+                    tmpHasAnyTypeOfSugarsIDs.add(tmpID);
+
                     if (tmpHasAnyCircularSugar) {
                         tmpHasCircularSugarsCounter++;
-                        tmpHasCircularSugarsCNPs.add(tmpID);
+                        tmpHasCircularSugarsIDs.add(tmpID);
                     }
                     if (tmpHasAnyLinearSugar) {
                         tmpHasLinearSugarsCounter++;
-                        tmpHasLinearSugarsCNPs.add(tmpID);
+                        tmpHasLinearSugarsIDs.add(tmpID);
                     }
                     if (tmpHasAnyCircularSugar && tmpHasAnyLinearSugar) {
                         tmpHasCircularAndLinearSugarsCounter++;
-                        tmpHasCircularAndLinearSugarsCNPs.add(tmpID);
+                        tmpHasCircularAndLinearSugarsIDs.add(tmpID);
                     }
                     if (tmpDeglycosylatedClone.isEmpty()) {
                         tmpBasicallyASugarCounter++;
-                        tmpBasicallyASugarCNPs.add(tmpID);
+                        tmpBasicallyASugarIDs.add(tmpID);
                     }
+                    String tmpSmilesCode = tmpSmiGen.create(tmpMolecule);
+                    tmpSugarContainingZINCMoleculesWriter.println(tmpSmilesCode + " " + tmpID);
                 } else {
                     tmpHasNoSugarsCounter++;
                     //tmpHasNoSugarsCNPs.add(tmpID);
@@ -2867,26 +2872,105 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         System.out.println("Basically a sugar counter: " + tmpBasicallyASugarCounter);
         tmpOutputWriter.println("Basically a sugar counter: " + tmpBasicallyASugarCounter);
         tmpOutputWriter.println();
-        tmpOutputWriter.println("Sugar-containing molecules: " + tmpHasAnyTypeOfSugarsCNPs);
+        tmpOutputWriter.println("Sugar-containing molecules: " + tmpHasAnyTypeOfSugarsIDs);
         tmpOutputWriter.println();
         //tmpOutputWriter.println("No sugar containing molecules: " + tmpHasNoSugarsCNPs);
         //tmpOutputWriter.println();
-        tmpOutputWriter.println("Circular-sugar-containing molecules: " + tmpHasCircularSugarsCNPs);
+        tmpOutputWriter.println("Circular-sugar-containing molecules: " + tmpHasCircularSugarsIDs);
         tmpOutputWriter.println();
-        tmpOutputWriter.println("Linear-sugar-containing molecules: " + tmpHasLinearSugarsCNPs);
+        tmpOutputWriter.println("Linear-sugar-containing molecules: " + tmpHasLinearSugarsIDs);
         tmpOutputWriter.println();
-        tmpOutputWriter.println("Molecules containing both circular and linear sugars: " + tmpHasCircularAndLinearSugarsCNPs);
+        tmpOutputWriter.println("Molecules containing both circular and linear sugars: " + tmpHasCircularAndLinearSugarsIDs);
         tmpOutputWriter.println();
-        tmpOutputWriter.println("Basically a sugar: " + tmpBasicallyASugarCNPs);
+        tmpOutputWriter.println("Basically a sugar: " + tmpBasicallyASugarIDs);
         tmpOutputWriter.flush();
+        tmpSugarContainingZINCMoleculesWriter.flush();
         tmpReader.close();
         tmpOutputWriter.close();
+        tmpSugarContainingZINCMoleculesWriter.close();
         Assert.assertEquals(tmpMoleculesCounter, tmpHasNoSugarsCounter + tmpHasAnyTypeOfSugarsCounter);
     }
 
     /**
      * TODO
+     *
+     * Check whether sugar-containing ZINC molecules are marked as drugs/bioactive via http using something like this:
+     * http://zinc15.docking.org/substances/ZINC000018011573.txt:[?]
      */
+    @Ignore
+    @Test
+    public void zincMoleculesWithSugarsBioactivityTest() throws Exception {
+        //TODO
+    }
+
+    /**
+     * TODO
+     */
+    @Ignore
+    @Test
+    public void zincMoleculesWithSugarsCOCONUTMembershipTest() throws Exception {
+        File tmpSugarContainingZincMoleculesSmilesFile = null;
+        try {
+            tmpSugarContainingZincMoleculesSmilesFile = new File(GlycosylationStatisticsTest.OUTPUT_FOLDER_NAME + File.separator
+                    + "zinc_stats_basics_test" + File.separator + "sugar-containing_ZINC_molecules.txt");
+        } catch (NullPointerException aNullPointerException) {
+            GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, aNullPointerException.toString(), aNullPointerException);
+            System.out.println("Sugar-containing ZINC molecules file could not be found. Test is ignored.");
+            Assume.assumeTrue(false);
+        }
+        System.out.println(tmpSugarContainingZincMoleculesSmilesFile.getAbsolutePath());
+        //TODO open COCONUT connection
+        final String tmpSpecificOutputFolderName = "zinc_sugar_molecules_coconut_test";
+        //Prints output folder to console
+        String tmpOutputFolderPath = this.initializeOutputFolderAndLogger(tmpSpecificOutputFolderName);
+        PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
+        //TODO create CSV with ZINC id to COCONUT CNP matching and write to it below
+        FileReader tmpSugarContainingZincMoleculesSmilesFileReader = new FileReader(tmpSugarContainingZincMoleculesSmilesFile);
+        BufferedReader tmpSugarContainingZincMoleculesSmilesBufferedReader = new BufferedReader(tmpSugarContainingZincMoleculesSmilesFileReader);
+        String tmpNextLine = "";
+        String tmpSmilesCode;
+        String tmpID = "";
+        int tmpMoleculesCounter = 0;
+        int tmpExceptionsCounter = 0;
+        int tmpMoleculesFoundInCoconutCounter = 0;
+        while (true) {
+            try {
+                tmpNextLine = tmpSugarContainingZincMoleculesSmilesBufferedReader.readLine();
+                if (Objects.isNull(tmpNextLine)) {
+                    break;
+                }
+                tmpMoleculesCounter++;
+                if ((tmpMoleculesCounter % 10000) == 0) {
+                    System.out.println(tmpMoleculesCounter + " lines were processed already...");
+                }
+                String[] tmpSmilesCodeAndId = tmpNextLine.split(" ");
+                tmpSmilesCode = tmpSmilesCodeAndId[0];
+                tmpID = tmpSmilesCodeAndId[1];
+                //TODO create inchikey and search for it in coconut
+            } catch (Exception anException) {
+                GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
+                tmpExceptionsCounter++;
+                //continue;
+            }
+        }
+        tmpSugarContainingZincMoleculesSmilesFileReader.close();
+        tmpSugarContainingZincMoleculesSmilesBufferedReader.close();
+        System.out.println("Processing of the sugar-containing ZINC molecules done.");
+        System.out.println(tmpMoleculesCounter + " molecules were processed.");
+        System.out.println(tmpExceptionsCounter + " exceptions occurred.");
+        System.out.println(tmpMoleculesFoundInCoconutCounter + " sugar-containing ZINC molecules were found in COCONUT.");
+        tmpOutputWriter.println("Processing of the sugar-containing ZINC molecules done.");
+        tmpOutputWriter.println(tmpMoleculesCounter + " molecules were processed.");
+        tmpOutputWriter.println(tmpExceptionsCounter + " exceptions occurred.");
+        tmpOutputWriter.println(tmpMoleculesFoundInCoconutCounter + " sugar-containing ZINC molecules were found in COCONUT.");
+        tmpOutputWriter.flush();
+        tmpOutputWriter.close();
+    }
+
+    /**
+     * TODO
+     */
+    @Ignore
     @Test
     public void zincDatasetCurationTest() throws Exception {
         ClassLoader tmpClassLoader = this.getClass().getClassLoader();
@@ -3002,6 +3086,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         tmpSDFBufferedWriter.close();
         tmpSdfFileWriter.flush();
         tmpSdfFileWriter.close();
+        tmpOutputWriter.flush();
+        tmpOutputWriter.close();
         System.out.println("Processing of the for-sale subset done.");
         System.out.println(tmpMoleculesCounter + " molecules were processed.");
         System.out.println(tmpExceptionsCounter + " exceptions occurred.");
