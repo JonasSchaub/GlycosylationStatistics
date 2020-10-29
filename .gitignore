@@ -44,3 +44,6 @@ zinc-all-for-sale.sdf
 COCONUT_DB_august_17.sdf
 COCONUT_DB_september_09.sdf
 ZINC_biogenic_subset_2020_Okt_17.txt
+ZINC_for-sale_subset_2020_Okt_19.txt
+output/
+.ipynb_checkpoints/
