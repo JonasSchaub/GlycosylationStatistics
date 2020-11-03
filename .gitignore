@@ -45,5 +45,9 @@ COCONUT_DB_august_17.sdf
 COCONUT_DB_september_09.sdf
 ZINC_biogenic_subset_2020_Okt_17.txt
 ZINC_for-sale_subset_2020_Okt_19.txt
+ZINC_in-vitro_subset_2020_Okt_30.txt
+ZINC_for-sale_picked_subset_2020_Okt_19.txt
+ZINC_in-vitro_without_biogenics_and_COCONUT.sdf
+ZINC_for-sale_without_biogenics_and_COCONUT.sdf
 output/
 .ipynb_checkpoints/
