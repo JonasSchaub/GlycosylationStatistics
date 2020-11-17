@@ -28,7 +28,7 @@ package de.unijena.cheminf.deglycosylation;
  * IMPORTANT NOTE: This is a copy of
  * https://github.com/JonasSchaub/SugarRemoval/blob/master/src/main/java/de/unijena/cheminf/deglycosylation/SugarRemovalUtility.java
  * Therefore, do not make any changes here but in the original repository!
- * Last copied on August 17th 2020
+ * Last copied on November 17th 2020
  */
 
 import org.openscience.cdk.AtomContainer;
@@ -68,13 +68,13 @@ import java.util.logging.Logger;
 
 /**
  * The Sugar Removal Utility (SRU) implements a generalized algorithm for automated detection of circular and linear
- * sugars in molecular structures and their removal, as described in "Schaub J, Zielesny A, Steinbeck C, Sorokina M. 
- * Too sweet: cheminformatics for deglycosylation in natural products, 02 August 2020, PREPRINT (Version 1)", available
- * at Research Square [<a href="https://doi.org/10.21203/rs.3.rs-50194/v3">DOI:10.21203/rs.3.rs-50194/v3</a>].
+ * sugars in molecular structures and their removal, as described in <a href="https://doi.org/10.1186/s13321-020-00467-y"
+ * >"Schaub, J., Zielesny, A., Steinbeck, C., Sorokina, M. Too sweet: cheminformatics for deglycosylation in natural
+ * products. J Cheminform 12, 67 (2020). https://doi.org/10.1186/s13321-020-00467-y"</a>.
  * It offers various functions to detect and remove sugar moieties with different options.
  *
  * @author Jonas Schaub, Maria Sorokina
- * @version 1.0.0.0
+ * @version 1.2.0.0
  */
 public class SugarRemovalUtility {
     //<editor-fold desc="Enum PreservationModeOption">
@@ -304,6 +304,18 @@ public class SugarRemovalUtility {
      * it to another ring is preserved.
      */
     public static final boolean DETECT_SPIRO_RINGS_AS_CIRCULAR_SUGARS_DEFAULT = false;
+
+    /**
+     * Default setting for whether sugar-like rings that have keto groups should also be detected as circular sugars
+     * (default: false). The general rule specified in the original algorithm description is that every potential sugar
+     * cycle with an exocyclic double or triple bond is excluded from circular sugar detection. If this option is turned
+     * on, an exemption to this rule is made for potential sugar cycles having keto groups. Also, the double-bound oxygen
+     * atoms will then count for the number of connected oxygen atoms and the algorithm will not regard how many keto
+     * groups are attached to the cycle (might be only one, might be that all connected oxygen atoms are double-bound).
+     * If this option is turned off (default), every sugar-like cycle with an exocyclic double or triple bond will be
+     * excluded from the detected circular sugars, as it is specified in the original algorithm description.
+     */
+    public static final boolean DETECT_CIRCULAR_SUGARS_WITH_KETO_GROUPS_DEFAULT = false;
     //</editor-fold>
 
     //<editor-fold desc="SMARTS patterns for ester, ether, peroxide bonds">
@@ -421,12 +433,17 @@ public class SugarRemovalUtility {
      * Detect spiro rings as possible sugar rings setting.
      */
     private boolean detectSpiroRingsAsCircularSugarsSetting;
+
+    /**
+     * Detect circular sugars with keto groups setting.
+     */
+    private boolean detectCircularSugarsWithKetoGroupsSetting;
     //</editor-fold>
     //
     //<editor-fold desc="Constructors">
     /**
      * Sole constructor of this class. All settings are set to their default values (see public static constants or
-     * enquire via get/is methods). To change these settings, use the respective set methods.
+     * enquire via get/is methods). To change these settings, use the respective 'setXY()' methods.
      */
     public SugarRemovalUtility() {
         /*method setDetectLinearAcidicSugarsSetting() called in restoreDefaultSettings() checks whether the setting has
@@ -642,6 +659,8 @@ public class SugarRemovalUtility {
     /**
      * Specifies whether linear sugar structures that are part of a ring should be detected according to the current
      * settings. This setting is important for e.g. macrocycles that contain sugars or pseudosugars.
+     * <br>Note that potential circular sugar candidates (here always including spiro sugar rings also) are filtered from
+     * linear sugar candidates, even with this setting turned on.
      *
      * @return true if linear sugars in rings are detected and removed with the current settings
      */
@@ -692,11 +711,29 @@ public class SugarRemovalUtility {
     /**
      * Specifies whether spiro rings are included in the initial set of detected rings considered for circular
      * sugar detection.
+     * <br>Note for linear sugar detection: Here, the spiro rings will always be filtered along with the potential
+     * circular sugar candidates.
      *
      * @return true if spiro rings can be detected as circular sugars with the current settings
      */
     public boolean areSpiroRingsDetectedAsCircularSugars() {
         return this.detectSpiroRingsAsCircularSugarsSetting;
+    }
+
+    /**
+     * Specifies whether potential sugar cycles with keto groups are detected in circular sugar detection. The general
+     * rule specified in the original algorithm description is that every potential sugar cycle with an exocyclic double
+     * or triple bond is excluded from circular sugar detection. If this option is turned
+     * on, an exemption to this rule is made for potential sugar cycles having keto groups. Also, the double-bound oxygen
+     * atoms will then count for the number of connected oxygen atoms and the algorithm will not regard how many keto
+     * groups are attached to the cycle (might be only one, might be that all connected oxygen atoms are double-bound).
+     * If this option is turned off, every sugar-like cycle with an exocyclic double or triple bond will be
+     * excluded from the detected circular sugars, as it is specified in the original algorithm description.
+     *
+     * @return true if potential sugar cycles having keto groups are detected in circular sugar detection
+     */
+    public boolean areCircularSugarsWithKetoGroupsDetected() {
+        return this.detectCircularSugarsWithKetoGroupsSetting;
     }
     //</editor-fold>
     //
@@ -1213,6 +1250,8 @@ public class SugarRemovalUtility {
     /**
      * Sets the option to detect linear sugar structures that are part of a ring. This setting is important for e.g.
      * macrocycles that contain sugars or pseudosugars.
+     * <br>Note that potential circular sugar candidates (here always including spiro sugar rings also) are filtered from
+     * linear sugar candidates, even with this setting turned on.
      *
      * @param aBoolean true, if linear sugar structures that are part of a ring should be detected (and removed)
      */
@@ -1303,11 +1342,29 @@ public class SugarRemovalUtility {
      * sugar detection. If the option is turned on, spiro atoms connected two spiro rings will be protected if a spiro
      * sugar ring is removed. In the opposite case, spiro rings will be filtered from the set of isolated cycles detected
      * in the given molecule.
+     * <br>Note for linear sugar detection: Here, the spiro rings will always be filtered along with the potential
+     * circular sugar candidates.
      *
      * @param aBoolean true, if spiro rings should be detectable as circular sugars
      */
     public void setDetectSpiroRingsAsCircularSugarsSetting(boolean aBoolean) {
         this.detectSpiroRingsAsCircularSugarsSetting = aBoolean;
+    }
+
+    /**
+     * Sets the option to detect potential sugar cycles with keto groups as circular sugars in circular sugar detection. The general
+     * rule specified in the original algorithm description is that every potential sugar cycle with an exocyclic double
+     * or triple bond is excluded from circular sugar detection. If this option is turned
+     * on, an exemption to this rule is made for potential sugar cycles having keto groups. Also, the double-bound oxygen
+     * atoms will then count for the number of connected oxygen atoms and the algorithm will not regard how many keto
+     * groups are attached to the cycle (might be only one, might be that all connected oxygen atoms are double-bound).
+     * If this option is turned off, every sugar-like cycle with an exocyclic double or triple bond will be
+     * excluded from the detected circular sugars, as it is specified in the original algorithm description.
+     *
+     * @param aBoolean true, if circular sugars with keto groups should be detected
+     */
+    public void setDetectCircularSugarsWithKetoGroupsSetting(boolean aBoolean) {
+        this.detectCircularSugarsWithKetoGroupsSetting = aBoolean;
     }
 
     /**
@@ -1366,6 +1423,7 @@ public class SugarRemovalUtility {
         this.setLinearSugarCandidateMaxSizeSetting(SugarRemovalUtility.LINEAR_SUGAR_CANDIDATE_MAX_SIZE_DEFAULT);
         this.setDetectLinearAcidicSugarsSetting(SugarRemovalUtility.DETECT_LINEAR_ACIDIC_SUGARS_DEFAULT);
         this.setDetectSpiroRingsAsCircularSugarsSetting(SugarRemovalUtility.DETECT_SPIRO_RINGS_AS_CIRCULAR_SUGARS_DEFAULT);
+        this.setDetectCircularSugarsWithKetoGroupsSetting(SugarRemovalUtility.DETECT_CIRCULAR_SUGARS_WITH_KETO_GROUPS_DEFAULT);
     }
     //</editor-fold>
     //
@@ -1482,7 +1540,7 @@ public class SugarRemovalUtility {
             return false;
         }
         this.addUniqueIndicesToAtoms(aMolecule);
-        List<IAtomContainer> tmpPotentialSugarRings = this.detectPotentialSugarCycles(aMolecule);
+        List<IAtomContainer> tmpPotentialSugarRings = this.detectPotentialSugarCycles(aMolecule, this.detectSpiroRingsAsCircularSugarsSetting);
         if (tmpPotentialSugarRings.size() != 1) {
             return false;
         }
@@ -2219,7 +2277,7 @@ public class SugarRemovalUtility {
         if (!tmpIndicesAreSet) {
             this.addUniqueIndicesToAtoms(aMolecule);
         }
-        List<IAtomContainer> tmpPotentialSugarRings = this.detectPotentialSugarCycles(aMolecule);
+        List<IAtomContainer> tmpPotentialSugarRings = this.detectPotentialSugarCycles(aMolecule, this.detectSpiroRingsAsCircularSugarsSetting);
         if (tmpPotentialSugarRings.isEmpty()) {
             return new ArrayList<IAtomContainer>(0);
         }
@@ -2984,15 +3042,19 @@ public class SugarRemovalUtility {
     //<editor-fold desc="Methods for circular sugars">
     /**
      * Detects and returns cycles of the given molecule that are isolated (spiro rings included or not according to the
-     * current settings), isomorph to the circular sugar patterns, and only have exocyclic single bonds. These cycles are
+     * boolean parameter), isomorph to the circular sugar patterns, and only have exocyclic single bonds. These cycles are
      * the general candidates for circular sugars that are filtered according to the other settings in the following steps.
      * Spiro atoms are marked by a property.
      *
      * @param aMolecule the molecule to extract potential circular sugars from
+     * @param aIncludeSpiroRings specification whether spiro rings should be included in the detected potential sugar
+     *                           cycles or filtered out; for circular sugar detection this should be set according to the
+     *                           current 'detect spiro rings as circular sugars' setting; for filtering circular sugar
+     *                           candidates or their atoms during linear sugar detection, this should be set to 'true'
      * @return a list of the potential sugar cycles
      * @throws NullPointerException if the given molecule is 'null'
      */
-    protected List<IAtomContainer> detectPotentialSugarCycles(IAtomContainer aMolecule) throws NullPointerException {
+    protected List<IAtomContainer> detectPotentialSugarCycles(IAtomContainer aMolecule, boolean aIncludeSpiroRings) throws NullPointerException {
         //<editor-fold desc="Checks">
         Objects.requireNonNull(aMolecule, "Given molecule is 'null'.");
         if (aMolecule.isEmpty()) {
@@ -3056,7 +3118,7 @@ public class SugarRemovalUtility {
             if (Objects.isNull(tmpIsolatedRing) || tmpIsolatedRing.isEmpty()) {
                 continue;
             }
-            if (!this.detectSpiroRingsAsCircularSugarsSetting) {
+            if (!aIncludeSpiroRings) {
                 //Filtering spiro rings if they should not be detected as sugars
                 String tmpRingID = this.generateSubstructureIdentifier(tmpIsolatedRing);
                 //if true, the ring is fused or spiro according to the map; but since only isolated cycles are queried,
@@ -3110,7 +3172,9 @@ public class SugarRemovalUtility {
 
     /**
      * Checks whether all exocyclic bonds connected to a given ring fragment of a parent atom container are of single
-     * order. The method iterates over all cyclic atoms and all of their bonds. So the runtime scales linear with the number
+     * order. IMPORTANT note: If the option to allow potential sugar cycles having keto groups is activated, this method also returns
+     * true if a cycle having a keto group is processed.
+     * <br>The method iterates over all cyclic atoms and all of their bonds. So the runtime scales linear with the number
      * of cyclic atoms and their connected bonds. In principle, this method can be used also for non-cyclic substructures.
      * <br>Note: It is not tested whether the original molecule is actually the parent of the ring to test.
      *
@@ -3148,7 +3212,36 @@ public class SugarRemovalUtility {
                 }
             }
         }
-        return (BondManipulator.getMaximumBondOrder(tmpExocyclicBondsList) == IBond.Order.SINGLE);
+        if (this.detectCircularSugarsWithKetoGroupsSetting) {
+            for (IBond tmpBond : tmpExocyclicBondsList) {
+                IBond.Order tmpOrder = tmpBond.getOrder();
+                //if the loop is not exited via return, true is returned after its completion
+                if (tmpOrder != IBond.Order.SINGLE) {
+                    //if the bond order is double, check for keto group; otherwise, return false
+                    if (tmpOrder == IBond.Order.DOUBLE) {
+                        boolean tmpContainsOxygen = false;
+                        for (IAtom tmpAtom : tmpBond.atoms()) {
+                            if (tmpAtom.getSymbol().equals("O")) {
+                                tmpContainsOxygen = true;
+                            }
+                        }
+                        //if the bond contains oxygen, it is a keto group, because it double-bound
+                        // note: it is not checked whether the oxygen is outside of the ring, not inside, which is
+                        // hardly possible because the bond is exocyclic, the oxygen would be four-bound in total.
+                        // note 2: it is also not checked whether the oxygen has more bonds in addition to this double
+                        // bond, but this would also be not chemically intuitive.
+                        if (!tmpContainsOxygen) {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        } else {
+            return (BondManipulator.getMaximumBondOrder(tmpExocyclicBondsList) == IBond.Order.SINGLE);
+        }
     }
 
     /**
@@ -3636,7 +3729,7 @@ public class SugarRemovalUtility {
         }
         //</editor-fold>
         //generating set of atom ids of atoms that are part of the circular sugars in the molecule
-        List<IAtomContainer> tmpPotentialSugarRingsParent = this.detectPotentialSugarCycles(aParentMolecule);
+        List<IAtomContainer> tmpPotentialSugarRingsParent = this.detectPotentialSugarCycles(aParentMolecule, true);
         //nothing to process
         if (tmpPotentialSugarRingsParent.isEmpty()) {
             return;
@@ -3723,7 +3816,7 @@ public class SugarRemovalUtility {
         }
         //</editor-fold>
         //generating ids for the isolated potential sugar circles in the parent molecule
-        List<IAtomContainer> tmpPotentialSugarRingsParent = this.detectPotentialSugarCycles(aParentMolecule);
+        List<IAtomContainer> tmpPotentialSugarRingsParent = this.detectPotentialSugarCycles(aParentMolecule, true);
         //nothing to process
         if (tmpPotentialSugarRingsParent.isEmpty()) {
             return;
@@ -3742,7 +3835,7 @@ public class SugarRemovalUtility {
             if (!tmpAreIndicesSetInCandidate) {
                 this.addUniqueIndicesToAtoms(tmpCandidate);
             }
-            List<IAtomContainer> tmpPotentialSugarRingsCandidate = this.detectPotentialSugarCycles(tmpCandidate);
+            List<IAtomContainer> tmpPotentialSugarRingsCandidate = this.detectPotentialSugarCycles(tmpCandidate, true);
             if (!tmpPotentialSugarRingsCandidate.isEmpty()) {
                 //iterating over potential sugar rings in candidate
                 for(IAtomContainer tmpRing : tmpPotentialSugarRingsCandidate) {
@@ -3811,7 +3904,7 @@ public class SugarRemovalUtility {
         }
         //</editor-fold>
         //generating ids for the isolated potential sugar circles in the parent molecule
-        List<IAtomContainer> tmpPotentialSugarRingsParent = this.detectPotentialSugarCycles(aParentMolecule);
+        List<IAtomContainer> tmpPotentialSugarRingsParent = this.detectPotentialSugarCycles(aParentMolecule, true);
         //nothing to process
         if (tmpPotentialSugarRingsParent.isEmpty()) {
             return;
@@ -3830,7 +3923,7 @@ public class SugarRemovalUtility {
             if (!tmpAreIndicesSetInCandidate) {
                 this.addUniqueIndicesToAtoms(tmpCandidate);
             }
-            List<IAtomContainer> tmpPotentialSugarRingsCandidate = this.detectPotentialSugarCycles(tmpCandidate);
+            List<IAtomContainer> tmpPotentialSugarRingsCandidate = this.detectPotentialSugarCycles(tmpCandidate, true);
             boolean tmpIsAlsoIsolatedInParent = false;
             if (!tmpPotentialSugarRingsCandidate.isEmpty()) {
                 //iterating over potential sugar rings in candidate
