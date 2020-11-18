@@ -106,7 +106,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     /**
      * TODO
      */
-    private static final String SDF_NAME = "COCONUT_DB_november_17.sdf";
+    private static final String SDF_NAME = "COCONUT_DB_november_18.sdf";
 
     /**
      * Name of the output folder
