@@ -27,7 +27,6 @@ package de.unijena.cheminf.deglycosylation.stats;
 /**
  * TODO:
  * - write doc (and readme)
- * - Run COCONUT stats again on new COCONUT version and using unique_smiles
  * - Maybe add more stats, any ideas??
  * - subdivide the detected linear sugars in rings somehow, this number is odd! By size? By size of the rings they are part of?
  */
@@ -2499,8 +2498,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
         PrintWriter tmpCSVSRUPositiveWriter = this.initializeOutputFile(tmpOutputFolderPath, "SRUSugars.csv");
         PrintWriter tmpCSVSRUNegativeWriter = this.initializeOutputFile(tmpOutputFolderPath, "NonSRUSugars.csv");
-        tmpCSVSRUPositiveWriter.println("ID" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + "Frequency");
-        tmpCSVSRUNegativeWriter.println("ID" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + "Frequency");
+        tmpCSVSRUPositiveWriter.println("ID" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + "SMILES" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + "Frequency");
+        tmpCSVSRUNegativeWriter.println("ID" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + "SMILES" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + "Frequency");
         ClassLoader tmpClassLoader = this.getClass().getClassLoader();
         File tmpSDFile = null;
         try {
@@ -2636,12 +2635,13 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         }
         for (HashMap<String, Object> tmpReviewSugarMap : tmpSRUPositivePatternsMapArray) {
             String tmpName = (String) tmpReviewSugarMap.get("ID");
+            String tmpReviewSugarSmilesCode = (String) tmpReviewSugarMap.get("SMILES");
             int tmpFrequency = (int) tmpReviewSugarMap.get("FREQUENCY");
-            tmpCSVSRUPositiveWriter.println(tmpName + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
-            if (tmpFrequency > 9 && !(tmpReviewSugarMap.get("SMILES")).equals("[generation_failed]")) {
+            tmpCSVSRUPositiveWriter.println(tmpName + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpReviewSugarSmilesCode + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
+            if (tmpFrequency > 9 && !(tmpReviewSugarSmilesCode.equals("[generation_failed]"))) {
                 tmpDepictionGenerator.withSize(2000, 2000)
                         .withFillToFit()
-                        .depict(tmpSmiPar.parseSmiles((String)tmpReviewSugarMap.get("SMILES")))
+                        .depict(tmpSmiPar.parseSmiles(tmpReviewSugarSmilesCode))
                         .writeTo(tmpOutputFolderPath + File.separator + "SRUPositive" + File.separator + tmpFrequency
                                 + "_" + tmpName +".png");
             }
@@ -2652,12 +2652,13 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         }
         for (HashMap<String, Object> tmpReviewSugarMap : tmpSRUNegativePatternsMapArray) {
             String tmpName = (String) tmpReviewSugarMap.get("ID");
+            String tmpReviewSugarSmilesCode = (String) tmpReviewSugarMap.get("SMILES");
             int tmpFrequency = (int) tmpReviewSugarMap.get("FREQUENCY");
-            tmpCSVSRUNegativeWriter.println(tmpName + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
-            if (tmpFrequency > 9 && !(tmpReviewSugarMap.get("SMILES")).equals("[generation_failed]")) {
+            tmpCSVSRUNegativeWriter.println(tmpName + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpReviewSugarSmilesCode + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
+            if (tmpFrequency > 9 && !(tmpReviewSugarSmilesCode.equals("[generation_failed]"))) {
                 tmpDepictionGenerator.withSize(2000, 2000)
                         .withFillToFit()
-                        .depict(tmpSmiPar.parseSmiles((String)tmpReviewSugarMap.get("SMILES")))
+                        .depict(tmpSmiPar.parseSmiles(tmpReviewSugarSmilesCode))
                         .writeTo(tmpOutputFolderPath + File.separator + "SRUNegative" + File.separator + tmpFrequency
                                 + "_" + tmpName +".png");
             }
@@ -2695,8 +2696,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
         PrintWriter tmpCSVSRUPositiveWriter = this.initializeOutputFile(tmpOutputFolderPath, "SRUSugars.csv");
         PrintWriter tmpCSVSRUNegativeWriter = this.initializeOutputFile(tmpOutputFolderPath, "NonSRUSugars.csv");
-        tmpCSVSRUPositiveWriter.println("ID" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + "Frequency");
-        tmpCSVSRUNegativeWriter.println("ID" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + "Frequency");
+        tmpCSVSRUPositiveWriter.println("ID" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + "SMILES" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + "Frequency");
+        tmpCSVSRUNegativeWriter.println("ID" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + "SMILES" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + "Frequency");
         ClassLoader tmpClassLoader = this.getClass().getClassLoader();
         File tmpSDFile = null;
         try {
@@ -2837,12 +2838,13 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         }
         for (HashMap<String, Object> tmpReviewSugarMap : tmpSRUPositivePatternsMapArray) {
             String tmpName = (String) tmpReviewSugarMap.get("ID");
+            String tmpReviewSugarSmilesCode = (String) tmpReviewSugarMap.get("SMILES");
             int tmpFrequency = (int) tmpReviewSugarMap.get("FREQUENCY");
-            tmpCSVSRUPositiveWriter.println(tmpName + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
-            if (tmpFrequency > 9 && !(tmpReviewSugarMap.get("SMILES").equals("[generation_failed]"))) {
+            tmpCSVSRUPositiveWriter.println(tmpName + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpReviewSugarSmilesCode + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
+            if (tmpFrequency > 9 && !(tmpReviewSugarSmilesCode.equals("[generation_failed]"))) {
                 tmpDepictionGenerator.withSize(2000, 2000)
                         .withFillToFit()
-                        .depict(tmpSmiPar.parseSmiles((String)tmpReviewSugarMap.get("SMILES")))
+                        .depict(tmpSmiPar.parseSmiles(tmpReviewSugarSmilesCode))
                         .writeTo(tmpOutputFolderPath + File.separator + "SRUPositive" + File.separator + tmpFrequency
                                 + "_" + tmpName +".png");
             }
@@ -2853,12 +2855,13 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         }
         for (HashMap<String, Object> tmpReviewSugarMap : tmpSRUNegativePatternsMapArray) {
             String tmpName = (String) tmpReviewSugarMap.get("ID");
+            String tmpReviewSugarSmilesCode = (String) tmpReviewSugarMap.get("SMILES");
             int tmpFrequency = (int) tmpReviewSugarMap.get("FREQUENCY");
-            tmpCSVSRUNegativeWriter.println(tmpName + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
-            if (tmpFrequency > 9 && !(tmpReviewSugarMap.get("SMILES").equals("[generation_failed]"))) {
+            tmpCSVSRUNegativeWriter.println(tmpName + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpReviewSugarSmilesCode + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
+            if (tmpFrequency > 9 && !(tmpReviewSugarSmilesCode.equals("[generation_failed]"))) {
                 tmpDepictionGenerator.withSize(2000, 2000)
                         .withFillToFit()
-                        .depict(tmpSmiPar.parseSmiles((String)tmpReviewSugarMap.get("SMILES")))
+                        .depict(tmpSmiPar.parseSmiles(tmpReviewSugarSmilesCode))
                         .writeTo(tmpOutputFolderPath + File.separator + "SRUNegative" + File.separator + tmpFrequency
                                 + "_" + tmpName +".png");
             }
