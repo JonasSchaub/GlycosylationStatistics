@@ -49,8 +49,6 @@ import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.depict.DepictionGenerator;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.GraphUtil;
-import org.openscience.cdk.hash.HashGeneratorMaker;
-import org.openscience.cdk.hash.MoleculeHashGenerator;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
 import org.openscience.cdk.io.SDFWriter;
@@ -2199,10 +2197,10 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Unique);
         DepictionGenerator tmpDepictionGenerator = new DepictionGenerator();
-        MoleculeHashGenerator tmpHashGenerator = new HashGeneratorMaker().depth(16)
+        /*MoleculeHashGenerator tmpHashGenerator = new HashGeneratorMaker().depth(16)
                 .elemental()
                 .charged()
-                .molecular();
+                .molecular();*/
         Document tmpCurrentDoc;
         String tmpID;
         String tmpSmilesCode;
@@ -2212,7 +2210,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         int tmpExceptionsCounter = 0;
         int tmpHasCircularSugarsCounter = 0;
         int tmpDifferentMoietiesCounter = 0;
-        HashMap<Long, HashMap<String, Object>> tmpCircularSugarMoietiesMap = new HashMap<>(2000, 0.9f);
+        HashMap<String, HashMap<String, Object>> tmpCircularSugarMoietiesMap = new HashMap<>(2000, 0.9f);
         while (tmpCursor.hasNext()) {
             tmpID = "[unidentified]";
             try {
@@ -2238,7 +2236,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                     for (IAtomContainer tmpMoiety : tmpRemovedMoieties) {
                         AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpMoiety);
                         CDKHydrogenAdder.getInstance(DefaultChemObjectBuilder.getInstance()).addImplicitHydrogens(tmpMoiety);
-                        long tmpHashCode = tmpHashGenerator.generate(tmpMoiety);
+                        //long tmpHashCode = tmpHashGenerator.generate(tmpMoiety);
                         String tmpMoietySmilesCode;
                         try {
                             tmpMoietySmilesCode = tmpSmiGen.create(tmpMoiety);
@@ -2246,8 +2244,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                             GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                             tmpMoietySmilesCode = "[exception]";
                         }
-                        if (tmpCircularSugarMoietiesMap.containsKey(tmpHashCode)) {
-                            HashMap<String, Object> tmpInnerMap = tmpCircularSugarMoietiesMap.get(tmpHashCode);
+                        if (tmpCircularSugarMoietiesMap.containsKey(tmpMoietySmilesCode)) {
+                            HashMap<String, Object> tmpInnerMap = tmpCircularSugarMoietiesMap.get(tmpMoietySmilesCode);
                             int tmpFrequency = (int)tmpInnerMap.get("FREQUENCY");
                             tmpInnerMap.put("FREQUENCY", tmpFrequency + 1);
                         } else {
@@ -2256,7 +2254,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                             tmpInnerMap.put("FREQUENCY", 1);
                             tmpInnerMap.put("FIRST_ORIGIN", tmpID);
                             tmpInnerMap.put("SMILES", tmpMoietySmilesCode);
-                            tmpCircularSugarMoietiesMap.put(tmpHashCode, tmpInnerMap);
+                            tmpCircularSugarMoietiesMap.put(tmpMoietySmilesCode, tmpInnerMap);
                         }
                         tmpOutput = tmpOutput.concat(GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpMoietySmilesCode);
                     }
@@ -2270,9 +2268,9 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 //continue;
             }
         }
-        Long[] tmpKeySet = tmpCircularSugarMoietiesMap.keySet().toArray(new Long[0]);
+        String[] tmpKeySet = tmpCircularSugarMoietiesMap.keySet().toArray(new String[0]);
         Arrays.sort(tmpKeySet, new Comparator<>() {
-            public int compare(Long aFirstKey, Long aSecondKey) {
+            public int compare(String aFirstKey, String aSecondKey) {
                 int tmpFirstFrequency = (int)tmpCircularSugarMoietiesMap.get(aFirstKey).get("FREQUENCY");
                 int tmpSecondFrequency = (int)tmpCircularSugarMoietiesMap.get(aSecondKey).get("FREQUENCY");
                 return Integer.compare(tmpFirstFrequency, tmpSecondFrequency) * (-1);
@@ -2291,9 +2289,9 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         System.out.println();
         tmpOutputWriter.println();
         System.out.println("Producing output CSV and images...");
-        for (long tmpHashCode : tmpKeySet) {
-            String tmpEntry = tmpHashCode + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR;
-            HashMap<String, Object> tmpInnerMap = tmpCircularSugarMoietiesMap.get(tmpHashCode);
+        for (String tmpUniqueSmilesCode : tmpKeySet) {
+            String tmpEntry = tmpUniqueSmilesCode + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR;
+            HashMap<String, Object> tmpInnerMap = tmpCircularSugarMoietiesMap.get(tmpUniqueSmilesCode);
             tmpEntry = tmpEntry.concat(tmpInnerMap.get("SMILES") + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR);
             tmpEntry = tmpEntry.concat(tmpInnerMap.get("FREQUENCY") + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR);
             tmpEntry = tmpEntry.concat((String)tmpInnerMap.get("FIRST_ORIGIN"));
@@ -2303,7 +2301,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                         .withFillToFit()
                         .depict(tmpSmiPar.parseSmiles((String)tmpInnerMap.get("SMILES")))
                         .writeTo(tmpOutputFolderPath + File.separator + tmpInnerMap.get("FREQUENCY")
-                                + "_" + tmpHashCode +".png");
+                                + "_" + tmpUniqueSmilesCode +".png");
             }
         }
         tmpOutputWriter.flush();
@@ -2357,10 +2355,10 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Unique);
         DepictionGenerator tmpDepictionGenerator = new DepictionGenerator();
-        MoleculeHashGenerator tmpHashGenerator = new HashGeneratorMaker().depth(16)
+        /*MoleculeHashGenerator tmpHashGenerator = new HashGeneratorMaker().depth(16)
                 .elemental()
                 .charged()
-                .molecular();
+                .molecular();*/
         Document tmpCurrentDoc;
         String tmpID;
         String tmpSmilesCode;
@@ -2370,7 +2368,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         int tmpExceptionsCounter = 0;
         int tmpHasLinearSugarsCounter = 0;
         int tmpDifferentMoietiesCounter = 0;
-        HashMap<Long, HashMap<String, Object>> tmpLinearSugarMoietiesMap = new HashMap<>(2000, 0.9f);
+        HashMap<String, HashMap<String, Object>> tmpLinearSugarMoietiesMap = new HashMap<>(2000, 0.9f);
         while (tmpCursor.hasNext()) {
             tmpID = "[unidentified]";
             try {
@@ -2396,7 +2394,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                     for (IAtomContainer tmpMoiety : tmpRemovedMoieties) {
                         AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(tmpMoiety);
                         CDKHydrogenAdder.getInstance(DefaultChemObjectBuilder.getInstance()).addImplicitHydrogens(tmpMoiety);
-                        long tmpHashCode = tmpHashGenerator.generate(tmpMoiety);
+                        //long tmpHashCode = tmpHashGenerator.generate(tmpMoiety);
                         String tmpMoietySmilesCode;
                         try {
                             tmpMoietySmilesCode = tmpSmiGen.create(tmpMoiety);
@@ -2404,8 +2402,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                             GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                             tmpMoietySmilesCode = "[exception]";
                         }
-                        if (tmpLinearSugarMoietiesMap.containsKey(tmpHashCode)) {
-                            HashMap<String, Object> tmpInnerMap = tmpLinearSugarMoietiesMap.get(tmpHashCode);
+                        if (tmpLinearSugarMoietiesMap.containsKey(tmpMoietySmilesCode)) {
+                            HashMap<String, Object> tmpInnerMap = tmpLinearSugarMoietiesMap.get(tmpMoietySmilesCode);
                             int tmpFrequency = (int)tmpInnerMap.get("FREQUENCY");
                             tmpInnerMap.put("FREQUENCY", tmpFrequency + 1);
                         } else {
@@ -2414,7 +2412,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                             tmpInnerMap.put("FREQUENCY", 1);
                             tmpInnerMap.put("FIRST_ORIGIN", tmpID);
                             tmpInnerMap.put("SMILES", tmpMoietySmilesCode);
-                            tmpLinearSugarMoietiesMap.put(tmpHashCode, tmpInnerMap);
+                            tmpLinearSugarMoietiesMap.put(tmpMoietySmilesCode, tmpInnerMap);
                         }
                         tmpOutput = tmpOutput.concat(GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpMoietySmilesCode);
                     }
@@ -2428,9 +2426,9 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 //continue;
             }
         }
-        Long[] tmpKeySet = tmpLinearSugarMoietiesMap.keySet().toArray(new Long[0]);
+        String[] tmpKeySet = tmpLinearSugarMoietiesMap.keySet().toArray(new String[0]);
         Arrays.sort(tmpKeySet, new Comparator<>() {
-            public int compare(Long aFirstKey, Long aSecondKey) {
+            public int compare(String aFirstKey, String aSecondKey) {
                 int tmpFirstFrequency = (int)tmpLinearSugarMoietiesMap.get(aFirstKey).get("FREQUENCY");
                 int tmpSecondFrequency = (int)tmpLinearSugarMoietiesMap.get(aSecondKey).get("FREQUENCY");
                 return Integer.compare(tmpFirstFrequency, tmpSecondFrequency) * (-1);
@@ -2449,9 +2447,9 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         System.out.println();
         tmpOutputWriter.println();
         System.out.println("Producing output CSV and images...");
-        for (long tmpHashCode : tmpKeySet) {
-            String tmpEntry = tmpHashCode + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR;
-            HashMap<String, Object> tmpInnerMap = tmpLinearSugarMoietiesMap.get(tmpHashCode);
+        for (String tmpUniqueSmilesCode : tmpKeySet) {
+            String tmpEntry = tmpUniqueSmilesCode + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR;
+            HashMap<String, Object> tmpInnerMap = tmpLinearSugarMoietiesMap.get(tmpUniqueSmilesCode);
             tmpEntry = tmpEntry.concat(tmpInnerMap.get("SMILES") + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR);
             tmpEntry = tmpEntry.concat(tmpInnerMap.get("FREQUENCY") + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR);
             tmpEntry = tmpEntry.concat((String)tmpInnerMap.get("FIRST_ORIGIN"));
@@ -2461,7 +2459,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                         .withFillToFit()
                         .depict(tmpSmiPar.parseSmiles((String)tmpInnerMap.get("SMILES")))
                         .writeTo(tmpOutputFolderPath + File.separator + tmpInnerMap.get("FREQUENCY")
-                                + "_" + tmpHashCode +".png");
+                                + "_" + tmpUniqueSmilesCode +".png");
             }
         }
         tmpOutputWriter.flush();
@@ -2517,13 +2515,17 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Unique);
         DepictionGenerator tmpDepictionGenerator = new DepictionGenerator();
         //important: it disregards stereochemistry!
-        MoleculeHashGenerator tmpHashGenerator = new HashGeneratorMaker().depth(16)
+        /*MoleculeHashGenerator tmpHashGenerator = new HashGeneratorMaker().depth(32)
                 .elemental()
+                //.isotopic()
                 .charged()
-                .molecular();
+                //.chiral()
+                .orbital()
+                .perturbed()
+                .molecular();*/
         IteratingSDFReader tmpReader = new IteratingSDFReader(new FileInputStream(tmpSDFile), DefaultChemObjectBuilder.getInstance(), true);
-        HashMap<Long, HashMap<String, Object>> tmpSRUPositiveSugarPatterns = new HashMap<>(344, 1);
-        HashMap<Long, HashMap<String, Object>> tmpSRUNegativeSugarPatterns = new HashMap<>(344, 1);
+        HashMap<String, HashMap<String, Object>> tmpSRUPositiveSugarPatterns = new HashMap<>(344, 1);
+        HashMap<String, HashMap<String, Object>> tmpSRUNegativeSugarPatterns = new HashMap<>(344, 1);
         String tmpReviewSugarID;
         int tmpReviewSugarsCounter = 0;
         int tmpReviewDataExceptionsCounter = 0;
@@ -2533,7 +2535,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 IAtomContainer tmpReviewSugar = tmpReader.next();
                 tmpReviewSugarsCounter++;
                 tmpReviewSugarID = tmpReviewSugar.getProperty("Name");
-                long tmpHashCode = tmpHashGenerator.generate(tmpReviewSugar);
+                //long tmpHashCode = tmpHashGenerator.generate(tmpReviewSugar);
                 HashMap<String, Object> tmpMap = new HashMap<>(4, 1);
                 tmpMap.put("PATTERN", DfPattern.findSubstructure(tmpReviewSugar));
                 tmpMap.put("ID", tmpReviewSugarID);
@@ -2544,23 +2546,24 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 } catch (CDKException anException) {
                     GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpReviewSugarID, anException);
                     tmpReviewDataExceptionsCounter++;
+                    continue;
                 }
                 tmpMap.put("SMILES", tmpSmilesCode);
                 //TODO: Also test whether it gets completely removed?
                 boolean tmpHasSugars = tmpSugarRemovalUtil.hasCircularSugars(tmpReviewSugar);
                 if (tmpHasSugars) {
-                    if (tmpSRUPositiveSugarPatterns.containsKey(tmpHashCode)) {
-                        HashMap<String, Object> tmpInnerMap = tmpSRUPositiveSugarPatterns.get(tmpHashCode);
+                    if (tmpSRUPositiveSugarPatterns.containsKey(tmpSmilesCode)) {
+                        HashMap<String, Object> tmpInnerMap = tmpSRUPositiveSugarPatterns.get(tmpSmilesCode);
                         tmpInnerMap.put("ID", tmpInnerMap.get("ID") + "_" + tmpReviewSugarID);
                     } else {
-                        tmpSRUPositiveSugarPatterns.put(tmpHashCode, tmpMap);
+                        tmpSRUPositiveSugarPatterns.put(tmpSmilesCode, tmpMap);
                     }
                 } else {
-                    if (tmpSRUNegativeSugarPatterns.containsKey(tmpHashCode)) {
-                        HashMap<String, Object> tmpInnerMap = tmpSRUNegativeSugarPatterns.get(tmpHashCode);
+                    if (tmpSRUNegativeSugarPatterns.containsKey(tmpSmilesCode)) {
+                        HashMap<String, Object> tmpInnerMap = tmpSRUNegativeSugarPatterns.get(tmpSmilesCode);
                         tmpInnerMap.put("ID", tmpInnerMap.get("ID") + "_" + tmpReviewSugarID);
                     } else {
-                        tmpSRUNegativeSugarPatterns.put(tmpHashCode, tmpMap);
+                        tmpSRUNegativeSugarPatterns.put(tmpSmilesCode, tmpMap);
                     }
                 }
             } catch (Exception anException) {
@@ -2613,6 +2616,13 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         tmpOutputWriter.println("Exceptions in COCONUT counter: " + tmpExceptionsCounter);
         System.out.println("Molecules in COCONUT counter: " + tmpMoleculesCounter);
         tmpOutputWriter.println("Molecules in COCONUT counter: " + tmpMoleculesCounter);
+        int tmpNumberOfDistinctPatterns = tmpSRUPositiveSugarPatterns.size() + tmpSRUNegativeSugarPatterns.size();
+        System.out.println("How many distinct moieties remained after grouping of stereo-isomers: " + tmpNumberOfDistinctPatterns);
+        tmpOutputWriter.println("How many distinct moieties remained after grouping of stereo-isomers: " + tmpNumberOfDistinctPatterns);
+        System.out.println(tmpSRUPositiveSugarPatterns.size() + " of these were detectable by the SRU.");
+        tmpOutputWriter.println(tmpSRUPositiveSugarPatterns.size() + " of these were detectable by the SRU.");
+        System.out.println(tmpSRUNegativeSugarPatterns.size() + " of these were NOT detectable by the SRU.");
+        tmpOutputWriter.println(tmpSRUNegativeSugarPatterns.size() + " of these were NOT detectable by the SRU.");
         HashMap<String, Object>[] tmpSRUPositivePatternsMapArray = tmpSRUPositiveSugarPatterns.values().toArray(new HashMap[0]);
         Arrays.sort(tmpSRUPositivePatternsMapArray, new Comparator<>() {
             public int compare(HashMap aFirstMap, HashMap aSecondMap) {
@@ -2720,13 +2730,17 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Unique);
         DepictionGenerator tmpDepictionGenerator = new DepictionGenerator();
         //important: it disregards stereochemistry!
-        MoleculeHashGenerator tmpHashGenerator = new HashGeneratorMaker().depth(16)
+        /*MoleculeHashGenerator tmpHashGenerator = new HashGeneratorMaker().depth(32)
                 .elemental()
+                //.isotopic()
                 .charged()
-                .molecular();
+                //.chiral()
+                .orbital()
+                .perturbed()
+                .molecular();*/
         IteratingSDFReader tmpReader = new IteratingSDFReader(new FileInputStream(tmpSDFile), DefaultChemObjectBuilder.getInstance(), true);
-        HashMap<Long, HashMap<String, Object>> tmpSRUPositiveSugarPatterns = new HashMap<>(344, 1);
-        HashMap<Long, HashMap<String, Object>> tmpSRUNegativeSugarPatterns = new HashMap<>(344, 1);
+        HashMap<String, HashMap<String, Object>> tmpSRUPositiveSugarPatterns = new HashMap<>(344, 1);
+        HashMap<String, HashMap<String, Object>> tmpSRUNegativeSugarPatterns = new HashMap<>(344, 1);
         String tmpReviewSugarID;
         int tmpReviewSugarsCounter = 0;
         int tmpReviewDataExceptionsCounter = 0;
@@ -2736,7 +2750,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 IAtomContainer tmpReviewSugar = tmpReader.next();
                 tmpReviewSugarsCounter++;
                 tmpReviewSugarID = tmpReviewSugar.getProperty("Name");
-                long tmpHashCode = tmpHashGenerator.generate(tmpReviewSugar);
+                //long tmpHashCode = tmpHashGenerator.generate(tmpReviewSugar);
                 HashMap<String, Object> tmpMap = new HashMap<>(4, 1);
                 tmpMap.put("PATTERN", DfPattern.findSubstructure(tmpReviewSugar));
                 tmpMap.put("ID", tmpReviewSugarID);
@@ -2747,23 +2761,24 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 } catch (CDKException anException) {
                     GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpReviewSugarID, anException);
                     tmpReviewDataExceptionsCounter++;
+                    continue;
                 }
                 tmpMap.put("SMILES", tmpSmilesCode);
                 //TODO: Also test whether it gets completely removed?
                 boolean tmpHasSugars = tmpSugarRemovalUtil.hasCircularSugars(tmpReviewSugar);
                 if (tmpHasSugars) {
-                    if (tmpSRUPositiveSugarPatterns.containsKey(tmpHashCode)) {
-                        HashMap<String, Object> tmpInnerMap = tmpSRUPositiveSugarPatterns.get(tmpHashCode);
+                    if (tmpSRUPositiveSugarPatterns.containsKey(tmpSmilesCode)) {
+                        HashMap<String, Object> tmpInnerMap = tmpSRUPositiveSugarPatterns.get(tmpSmilesCode);
                         tmpInnerMap.put("ID", tmpInnerMap.get("ID") + "_" + tmpReviewSugarID);
                     } else {
-                        tmpSRUPositiveSugarPatterns.put(tmpHashCode, tmpMap);
+                        tmpSRUPositiveSugarPatterns.put(tmpSmilesCode, tmpMap);
                     }
                 } else {
-                    if (tmpSRUNegativeSugarPatterns.containsKey(tmpHashCode)) {
-                        HashMap<String, Object> tmpInnerMap = tmpSRUNegativeSugarPatterns.get(tmpHashCode);
+                    if (tmpSRUNegativeSugarPatterns.containsKey(tmpSmilesCode)) {
+                        HashMap<String, Object> tmpInnerMap = tmpSRUNegativeSugarPatterns.get(tmpSmilesCode);
                         tmpInnerMap.put("ID", tmpInnerMap.get("ID") + "_" + tmpReviewSugarID);
                     } else {
-                        tmpSRUNegativeSugarPatterns.put(tmpHashCode, tmpMap);
+                        tmpSRUNegativeSugarPatterns.put(tmpSmilesCode, tmpMap);
                     }
                 }
             } catch (Exception anException) {
@@ -2816,6 +2831,13 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         tmpOutputWriter.println("Exceptions in COCONUT counter: " + tmpExceptionsCounter);
         System.out.println("Molecules in COCONUT counter: " + tmpMoleculesCounter);
         tmpOutputWriter.println("Molecules in COCONUT counter: " + tmpMoleculesCounter);
+        int tmpNumberOfDistinctPatterns = tmpSRUPositiveSugarPatterns.size() + tmpSRUNegativeSugarPatterns.size();
+        System.out.println("How many distinct moieties remained after grouping of stereo-isomers: " + tmpNumberOfDistinctPatterns);
+        tmpOutputWriter.println("How many distinct moieties remained after grouping of stereo-isomers: " + tmpNumberOfDistinctPatterns);
+        System.out.println(tmpSRUPositiveSugarPatterns.size() + " of these were detectable by the SRU.");
+        tmpOutputWriter.println(tmpSRUPositiveSugarPatterns.size() + " of these were detectable by the SRU.");
+        System.out.println(tmpSRUNegativeSugarPatterns.size() + " of these were NOT detectable by the SRU.");
+        tmpOutputWriter.println(tmpSRUNegativeSugarPatterns.size() + " of these were NOT detectable by the SRU.");
         HashMap<String, Object>[] tmpSRUPositivePatternsMapArray = tmpSRUPositiveSugarPatterns.values().toArray(new HashMap[0]);
         Arrays.sort(tmpSRUPositivePatternsMapArray, new Comparator<>() {
             public int compare(HashMap aFirstMap, HashMap aSecondMap) {
@@ -3182,7 +3204,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 if (tmpHasAnyTypeOfSugar) {
                     tmpHasAnyTypeOfSugarsCounter++;
                     tmpHasAnyTypeOfSugarsIDs.add(tmpZincID);
-
                     if (tmpHasAnyCircularSugar) {
                         tmpHasCircularSugarsCounter++;
                         tmpHasCircularSugarsIDs.add(tmpZincID);
@@ -3453,8 +3474,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                     System.out.println(tmpZincRawMoleculesCounter + " lines were processed already...");
                 }
                 String[] tmpSmilesCodeAndId = tmpZincRawFileNextLine.split(" ");
-                tmpZincRawSmilesCode = tmpSmilesCodeAndId[0];
-                tmpZincID = tmpSmilesCodeAndId[1];
+                tmpZincRawSmilesCode = tmpSmilesCodeAndId[0].trim();
+                tmpZincID = tmpSmilesCodeAndId[1].trim();
                 if (tmpZincRawSmilesCode.equals("SMILES") || tmpZincID.equals("Name")) {
                     continue;
                 }
