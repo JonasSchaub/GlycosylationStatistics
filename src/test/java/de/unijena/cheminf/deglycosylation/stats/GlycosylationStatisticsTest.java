@@ -26,9 +26,9 @@ package de.unijena.cheminf.deglycosylation.stats;
 
 /**
  * TODO:
+ * - general clean-up
  * - write doc (and readme)
  * - Maybe add more stats, any ideas??
- * - subdivide the detected linear sugars in rings somehow, this number is odd! By size? By size of the rings they are part of?
  */
 
 import com.mongodb.MongoClientSettings;
@@ -2184,8 +2184,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 + "SugarMoietySMILES";
         tmpCSVperMoleculeWriter.println(tmpCSVperMoleculeFileHeader);
         tmpCSVperMoleculeWriter.flush();
-        String tmpCSVmoietyFreqFileHeader = "hash" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR
-                + "SMILES" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR
+        String tmpCSVmoietyFreqFileHeader = //"hash" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR
+                /*+*/ "SMILES" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR
                 + "frequency" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR
                 + "firstOrigin";
         tmpCSVmoietyFreqWriter.println(tmpCSVmoietyFreqFileHeader);
@@ -2292,7 +2292,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         for (String tmpUniqueSmilesCode : tmpKeySet) {
             String tmpEntry = tmpUniqueSmilesCode + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR;
             HashMap<String, Object> tmpInnerMap = tmpCircularSugarMoietiesMap.get(tmpUniqueSmilesCode);
-            tmpEntry = tmpEntry.concat(tmpInnerMap.get("SMILES") + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR);
+            //tmpEntry = tmpEntry.concat(tmpInnerMap.get("SMILES") + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR);
             tmpEntry = tmpEntry.concat(tmpInnerMap.get("FREQUENCY") + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR);
             tmpEntry = tmpEntry.concat((String)tmpInnerMap.get("FIRST_ORIGIN"));
             tmpCSVmoietyFreqWriter.println(tmpEntry);
@@ -2342,8 +2342,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 + "SugarMoietySMILES";
         tmpCSVperMoleculeWriter.println(tmpCSVperMoleculeFileHeader);
         tmpCSVperMoleculeWriter.flush();
-        String tmpCSVmoietyFreqFileHeader = "hash" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR
-                + "SMILES" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR
+        String tmpCSVmoietyFreqFileHeader = //"hash" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR
+                /*+*/ "SMILES" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR
                 + "frequency" + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR
                 + "firstOrigin";
         tmpCSVmoietyFreqWriter.println(tmpCSVmoietyFreqFileHeader);
@@ -2450,7 +2450,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         for (String tmpUniqueSmilesCode : tmpKeySet) {
             String tmpEntry = tmpUniqueSmilesCode + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR;
             HashMap<String, Object> tmpInnerMap = tmpLinearSugarMoietiesMap.get(tmpUniqueSmilesCode);
-            tmpEntry = tmpEntry.concat(tmpInnerMap.get("SMILES") + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR);
+            //tmpEntry = tmpEntry.concat(tmpInnerMap.get("SMILES") + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR);
             tmpEntry = tmpEntry.concat(tmpInnerMap.get("FREQUENCY") + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR);
             tmpEntry = tmpEntry.concat((String)tmpInnerMap.get("FIRST_ORIGIN"));
             tmpCSVmoietyFreqWriter.println(tmpEntry);

@@ -28,7 +28,7 @@ package de.unijena.cheminf.deglycosylation;
  * IMPORTANT NOTE: This is a copy of
  * https://github.com/JonasSchaub/SugarRemoval/blob/master/src/main/java/de/unijena/cheminf/deglycosylation/SugarRemovalUtility.java
  * Therefore, do not make any changes here but in the original repository!
- * Last copied on December  2nd 2020
+ * Last copied on December 14th 2020
  */
 
 import org.openscience.cdk.AtomContainer;
@@ -74,7 +74,7 @@ import java.util.logging.Logger;
  * It offers various functions to detect and remove sugar moieties with different options.
  *
  * @author Jonas Schaub, Maria Sorokina
- * @version 1.2.0.0
+ * @version 1.2.1.1
  */
 public class SugarRemovalUtility {
     //<editor-fold desc="Enum PreservationModeOption">
@@ -1780,7 +1780,9 @@ public class SugarRemovalUtility {
         //<editor-fold desc="Checks">
         Objects.requireNonNull(aMolecule, "Given molecule is 'null'.");
         if (aMolecule.isEmpty()) {
-            return new ArrayList<IAtomContainer>(0);
+            List<IAtomContainer> tmpReturnList = new ArrayList<IAtomContainer>(1);
+            tmpReturnList.add(0, aMolecule);
+            return tmpReturnList;
         }
         if (this.removeOnlyTerminalSugarsSetting) {
             boolean tmpIsConnected = ConnectivityChecker.isConnected(aMolecule);
@@ -1962,7 +1964,9 @@ public class SugarRemovalUtility {
         //<editor-fold desc="Checks">
         Objects.requireNonNull(aMolecule, "Given molecule is 'null'.");
         if (aMolecule.isEmpty()) {
-            return new ArrayList<IAtomContainer>(0);
+            List<IAtomContainer> tmpReturnList = new ArrayList<IAtomContainer>(1);
+            tmpReturnList.add(0, aMolecule);
+            return tmpReturnList;
         }
         if (this.removeOnlyTerminalSugarsSetting) {
             boolean tmpIsConnected = ConnectivityChecker.isConnected(aMolecule);
@@ -2165,7 +2169,9 @@ public class SugarRemovalUtility {
         //<editor-fold desc="Checks">
         Objects.requireNonNull(aMolecule, "Given molecule is 'null'.");
         if (aMolecule.isEmpty()) {
-            return new ArrayList<IAtomContainer>(0);
+            List<IAtomContainer> tmpReturnList = new ArrayList<IAtomContainer>(1);
+            tmpReturnList.add(0, aMolecule);
+            return tmpReturnList;
         }
         if (this.removeOnlyTerminalSugarsSetting) {
             boolean tmpIsConnected = ConnectivityChecker.isConnected(aMolecule);
@@ -3104,7 +3110,7 @@ public class SugarRemovalUtility {
                     HashSet<String> tmpRingIDSet = new HashSet<>(5, 0.9f);
                     tmpRingIDSet.add(tmpRingID);
                     tmpAtomIDToRingIDMap.put(tmpAtomID, tmpRingIDSet);
-                //case 2: atom was already visited, so it is part of at least one other ring
+                    //case 2: atom was already visited, so it is part of at least one other ring
                 } else {
                     //current ring is marked as fused or spiro
                     tmpRingIdentifierToIsFusedOrSpiroMap.put(tmpRingID, true);
