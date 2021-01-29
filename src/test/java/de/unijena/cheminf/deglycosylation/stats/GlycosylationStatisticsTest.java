@@ -61,6 +61,7 @@ import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.CDKHydrogenAdder;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -3305,6 +3306,52 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     //</editor-fold>
     //
     //<editor-fold desc="Public methods">
+    /**
+     * TODO
+     *
+     * @throws Exception if anything goes wrong
+     */
+    @Test
+    public void singleSugarDetectionDepictionTest() throws Exception {
+        String tmpOutputFolderPath = this.initializeOutputFolderAndLogger("single_depiction_test");
+        SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+        DepictionGenerator tmpDepictionGenerator = new DepictionGenerator();
+        IAtomContainer tmpOriginalMolecule;
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        tmpOriginalMolecule = tmpSmiPar.parseSmiles(
+                //
+                "O=C(OC1C(=C)C2C(OC=C(C(=O)OCC(O)C(O)C(O)C(O)CO)C2C1)OC3OC(CO)C(O)C(O)C3O)C=CC4=CC=C(O)C(O)=C4");
+        tmpDepictionGenerator.withSize(2000, 2000)
+                .withFillToFit()
+                .depict(tmpOriginalMolecule)
+                .writeTo(tmpOutputFolderPath + File.separator + "Test_original_molecule.png");
+        List<IAtomContainer> tmpCandidates = tmpSugarRemovalUtil.getCircularSugarCandidates(tmpOriginalMolecule);
+        List<IAtomContainer> tmpToHighlight = new ArrayList<>(tmpCandidates.size());
+        for (int i = 0; i < tmpCandidates.size(); i++) {
+            IAtomContainer tmpCandidate = tmpCandidates.get(i);
+            tmpToHighlight.add(tmpCandidate);
+        }
+        tmpDepictionGenerator.withHighlight(tmpToHighlight, Color.BLUE)
+                .withSize(2000, 2000)
+                .withFillToFit()
+                .depict(tmpOriginalMolecule)
+                .writeTo(tmpOutputFolderPath + File.separator + "Test_all_candidates" + ".png");
+        for (int i = 0; i < tmpCandidates.size(); i++) {
+            IAtomContainer tmpCandidate = tmpCandidates.get(i);
+            List<IAtomContainer> tmpCandidateList = new ArrayList<>(1);
+            tmpCandidateList.add(tmpCandidate);
+            tmpDepictionGenerator.withHighlight(tmpCandidateList, Color.BLUE)
+                    .withSize(2000, 2000)
+                    .withFillToFit()
+                    .depict(tmpOriginalMolecule)
+                    .writeTo(tmpOutputFolderPath + File.separator + "Test_candidates_separately_" + i + ".png");
+        }
+        IAtomContainer tmpAglycon = tmpSugarRemovalUtil.removeCircularAndLinearSugars(tmpOriginalMolecule, true);
+        tmpDepictionGenerator.withSize(2000, 2000)
+                .withFillToFit()
+                .depict(tmpAglycon)
+                .writeTo(tmpOutputFolderPath + File.separator + "Test_deglycosylated_molecule.png");
+    }
 
     /**
      * TODO
