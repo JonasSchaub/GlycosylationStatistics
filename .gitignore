@@ -51,5 +51,8 @@ ZINC_in-vitro_subset_2020_Okt_30.txt
 ZINC_for-sale_picked_subset_2020_Okt_19.txt
 ZINC_in-vitro_without_biogenics_and_COCONUT.sdf
 ZINC_for-sale_without_biogenics_and_COCONUT.sdf
+sugar-containing_ZINC_for-sale_molecules.txt
+sugar-containing_ZINC_in-vitro_molecules.txt
+sugar-containing_ZINC_in-vitro-complete_molecules.txt
 output/
 .ipynb_checkpoints/

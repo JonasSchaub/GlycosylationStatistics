@@ -3134,6 +3134,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         this.doZINCstats("ZINC_in-vitro_without_biogenics_and_COCONUT.sdf", "zinc_in-vitro_stats_basics_test");
     }
 
+
+
     /**
      * 306347 molecules in this dataset
      */
@@ -3302,6 +3304,36 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         this.deleteZINCBiogenicAndCOCONUTMolecules("ZINC_in-vitro_subset_2020_Okt_30.txt",
                 "ZINC_in-vitro_without_biogenics_and_COCONUT.sdf", "zinc_in-vitro_curation_test");
     }
+
+    /**
+     * TODO
+     */
+    //@Ignore
+    @Test
+    public void zincForSaleFilterStereoIsomersOfSugarMols() throws Exception {
+        this.matchZINCsugarMolsToBiogenicsAndCOCONUT("sugar-containing_ZINC_for-sale_molecules.txt",
+                "authentic_sugar_mols.sdf", "zinc_for-sale_sugar_mols_matching_test");
+    }
+
+    /**
+     * TODO
+     */
+    //@Ignore
+    @Test
+    public void zincInVitroFilterStereoIsomersOfSugarMols() throws Exception {
+        this.matchZINCsugarMolsToBiogenicsAndCOCONUT("sugar-containing_ZINC_in-vitro_molecules.txt",
+                "authentic_sugar_mols.sdf", "zinc_in-vitro_sugar_mols_matching_test");
+    }
+
+    /**
+     * TODO
+     */
+    //@Ignore
+    @Test
+    public void zincInVitroCompleteFilterStereoIsomersOfSugarMols() throws Exception {
+        this.matchZINCsugarMolsToBiogenicsAndCOCONUT("sugar-containing_ZINC_in-vitro-complete_molecules.txt",
+                "authentic_sugar_mols.sdf", "zinc_in-vitro-complete_sugar_mols_matching_test");
+    }
     //</editor-fold>
     //</editor-fold>
     //
@@ -3318,14 +3350,15 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         DepictionGenerator tmpDepictionGenerator = new DepictionGenerator();
         IAtomContainer tmpOriginalMolecule;
         SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(true);
         tmpOriginalMolecule = tmpSmiPar.parseSmiles(
                 //
-                "O=C(OC1C(=C)C2C(OC=C(C(=O)OCC(O)C(O)C(O)C(O)CO)C2C1)OC3OC(CO)C(O)C(O)C3O)C=CC4=CC=C(O)C(O)=C4");
+                "O=C1C2=C(C(C3(C(C(C(C)(CC13O)O)O)O)O)=O)C(OC)=CC(O)=C2");
         tmpDepictionGenerator.withSize(2000, 2000)
                 .withFillToFit()
                 .depict(tmpOriginalMolecule)
                 .writeTo(tmpOutputFolderPath + File.separator + "Test_original_molecule.png");
-        List<IAtomContainer> tmpCandidates = tmpSugarRemovalUtil.getCircularSugarCandidates(tmpOriginalMolecule);
+        List<IAtomContainer> tmpCandidates = tmpSugarRemovalUtil.getLinearSugarCandidates(tmpOriginalMolecule);
         List<IAtomContainer> tmpToHighlight = new ArrayList<>(tmpCandidates.size());
         for (int i = 0; i < tmpCandidates.size(); i++) {
             IAtomContainer tmpCandidate = tmpCandidates.get(i);
@@ -3759,6 +3792,221 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         tmpReader.close();
         tmpOutputWriter.close();
         tmpSugarContainingZINCMoleculesWriter.close();
+    }
+
+    /**
+     *
+     */
+    public void matchZINCsugarMolsToBiogenicsAndCOCONUT(
+            String anOriginalDataSetFileName,
+            String aCuratedDataSetFileName,
+            String anOutputFolderName)
+            throws IllegalArgumentException, IOException {
+        ClassLoader tmpClassLoader = this.getClass().getClassLoader();
+        File tmpZincBiogenicSmilesFile = null;
+        try {
+            tmpZincBiogenicSmilesFile = new File(tmpClassLoader.getResource(GlycosylationStatisticsTest.ZINC_BIOGENIC_SUBSET_FILE_NAME).getFile());
+        } catch (NullPointerException aNullPointerException) {
+            GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, aNullPointerException.toString(), aNullPointerException);
+            System.out.println("ZINC biogenic subset file could not be found. Test is ignored.");
+            Assume.assumeTrue(false);
+        }
+        System.out.println(tmpZincBiogenicSmilesFile.getAbsolutePath());
+        //Prints output folder to console
+        String tmpOutputFolderPath = this.initializeOutputFolderAndLogger(anOutputFolderName);
+        PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
+        FileReader tmpZincBiogenicSmilesFileReader = new FileReader(tmpZincBiogenicSmilesFile);
+        BufferedReader tmpZincBiogenicSmilesBufferedReader = new BufferedReader(tmpZincBiogenicSmilesFileReader);
+        HashMap<String, String> tmpBiogenicSmilesMap = new HashMap<>(308100, 1); //308,035 molecules are in the dataset
+        SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+        SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Unique); //Unique does not encode stereochemistry!
+        String tmpZincBiogenicFileNextLine = "";
+        String tmpZincBiogenicFileSmilesCode;
+        String tmpZincID = "";
+        int tmpZincBiogenicMoleculesCounter = 0;
+        int tmpExceptionsCounter = 0;
+        System.out.println("Loading and processing ZINC biogenic subset now...");
+        while (true) {
+            try {
+                tmpZincBiogenicFileNextLine = tmpZincBiogenicSmilesBufferedReader.readLine();
+                if (Objects.isNull(tmpZincBiogenicFileNextLine)) {
+                    break;
+                }
+                tmpZincBiogenicMoleculesCounter++;
+                if ((tmpZincBiogenicMoleculesCounter % 10000) == 0) {
+                    System.out.println(tmpZincBiogenicMoleculesCounter + " lines were processed already...");
+                }
+                String[] tmpSmilesCodeAndId = tmpZincBiogenicFileNextLine.split(" ");
+                tmpZincBiogenicFileSmilesCode = tmpSmilesCodeAndId[0];
+                tmpZincID = tmpSmilesCodeAndId[1];
+                if (tmpZincBiogenicFileSmilesCode.equals("SMILES") || tmpZincID.equals("Name")) {
+                    continue;
+                }
+                IAtomContainer tmpBiogenicMolecule = tmpSmiPar.parseSmiles(tmpZincBiogenicFileSmilesCode);
+                String tmpCDKSmilesCode = tmpSmiGen.create(tmpBiogenicMolecule);
+                if (tmpBiogenicSmilesMap.containsKey(tmpCDKSmilesCode)) {
+                    System.out.println("ZINC molecule with id " + tmpZincID + " produces the same CDK unique SMILES string as another molecule in the data set with id " + tmpBiogenicSmilesMap.get(tmpCDKSmilesCode));
+                    tmpOutputWriter.println("ZINC molecule with id " + tmpZincID + " produces the same CDK unique SMILES string as another molecule in the data set with id " + tmpBiogenicSmilesMap.get(tmpCDKSmilesCode));
+                } else {
+                    tmpBiogenicSmilesMap.put(tmpCDKSmilesCode, tmpZincID);
+                }
+            } catch (Exception anException) {
+                GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpZincID, anException);
+                tmpExceptionsCounter++;
+                //continue;
+            }
+        }
+        tmpZincBiogenicSmilesFileReader.close();
+        tmpZincBiogenicSmilesBufferedReader.close();
+        System.out.println("Processing of the biogenic subset done.");
+        tmpOutputWriter.println("Processing of the biogenic subset done.");
+        System.out.println(tmpZincBiogenicMoleculesCounter + " molecules were processed.");
+        tmpOutputWriter.println(tmpZincBiogenicMoleculesCounter + " molecules were processed.");
+        System.out.println(tmpExceptionsCounter + " exceptions occurred.");
+        tmpOutputWriter.println(tmpExceptionsCounter + " exceptions occurred.");
+        System.out.println(tmpBiogenicSmilesMap.size() + " SMILES codes have been put into memory.");
+        tmpOutputWriter.println(tmpBiogenicSmilesMap.size() + " SMILES codes have been put into memory.");
+        System.out.println("Loading and processing COCONUT now...");
+        tmpOutputWriter.println("Loading and processing COCONUT now...");
+        MongoCursor<Document> tmpCursor = null;
+        try {
+            //prints to console if connection was successful
+            tmpCursor = this.getCOCONUTMongoCursorForIteration();
+        } catch (MongoTimeoutException aMongoTimeoutException) {
+            GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, aMongoTimeoutException.toString(), aMongoTimeoutException);
+            System.out.println("Timed out while trying to connect to MongoDB. Test is ignored.");
+            Assume.assumeTrue(false);
+        }
+        HashMap<String, String> tmpCoconutSmilesMap = new HashMap<>(402000, 1); //401,624 molecules are in the dataset
+        Document tmpCurrentDoc;
+        String tmpCoconutID = "";
+        String tmpCoconutSmilesCode = "";
+        IAtomContainer tmpCoconutMolecule;
+        int tmpCoconutMoleculesCounter = 0;
+        tmpExceptionsCounter = 0;
+        while (tmpCursor.hasNext()) {
+            tmpCoconutID = "[unidentified]";
+            try {
+                tmpCurrentDoc = tmpCursor.next();
+                if (Objects.isNull(tmpCurrentDoc)) {
+                    break;
+                }
+                tmpCoconutMoleculesCounter++;
+                if ((tmpCoconutMoleculesCounter % 10000) == 0) {
+                    System.out.println(tmpCoconutMoleculesCounter + " molecules were processed already...");
+                }
+                tmpCoconutID = tmpCurrentDoc.getString(GlycosylationStatisticsTest.ID_KEY);
+                tmpCoconutSmilesCode = tmpCurrentDoc.getString(GlycosylationStatisticsTest.SMILES_CODE_KEY);
+                tmpCoconutMolecule = tmpSmiPar.parseSmiles(tmpCoconutSmilesCode);
+                tmpCoconutMolecule.setTitle(tmpCoconutID);
+                String tmpCDKSmilesCode = tmpSmiGen.create(tmpCoconutMolecule);
+                if (tmpCoconutSmilesMap.containsKey(tmpCDKSmilesCode)) {
+                    System.out.println("COCONUT molecule with id " + tmpCoconutID + " produces the same CDK unique SMILES string as another molecule in the data set with id " + tmpCoconutSmilesMap.get(tmpCDKSmilesCode));
+                    tmpOutputWriter.println("COCONUT molecule with id " + tmpCoconutID + " produces the same CDK unique SMILES string as another molecule in the data set with id " + tmpCoconutSmilesMap.get(tmpCDKSmilesCode));
+                } else {
+                    tmpCoconutSmilesMap.put(tmpCDKSmilesCode, tmpCoconutID);
+                }
+            } catch (Exception anException) {
+                GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpCoconutID, anException);
+                tmpExceptionsCounter++;
+                //continue;
+            }
+        }
+        tmpCursor.close();
+        System.out.println("Processing of COCONUT done.");
+        tmpOutputWriter.println("Processing COCONUT done.");
+        System.out.println(tmpCoconutMoleculesCounter + " molecules were processed.");
+        tmpOutputWriter.println(tmpCoconutMoleculesCounter + " molecules were processed.");
+        System.out.println(tmpExceptionsCounter + " exceptions occurred.");
+        tmpOutputWriter.println(tmpExceptionsCounter + " exceptions occurred.");
+        System.out.println(tmpCoconutSmilesMap.size() + " SMILES codes have been put into memory.");
+        tmpOutputWriter.println(tmpCoconutSmilesMap.size() + " SMILES codes have been put into memory.");
+        System.out.println("Loading and processing the given ZINC data set now...");
+        tmpOutputWriter.println("Loading and processing the given ZINC data set now...");
+        File tmpZincRawSmilesFile = null;
+        try {
+            tmpZincRawSmilesFile = new File(tmpClassLoader.getResource(anOriginalDataSetFileName).getFile());
+        } catch (NullPointerException aNullPointerException) {
+            GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, aNullPointerException.toString(), aNullPointerException);
+            System.out.println("ZINC data set file could not be found. Test is ignored.");
+            Assume.assumeTrue(false);
+        }
+        System.out.println(tmpZincRawSmilesFile.getAbsolutePath());
+        FileReader tmpZincRawSmilesFileReader = new FileReader(tmpZincRawSmilesFile);
+        BufferedReader tmpZincRawSmilesBufferedReader = new BufferedReader(tmpZincRawSmilesFileReader);
+        File tmpSdFile = new File(tmpOutputFolderPath + File.separator + aCuratedDataSetFileName);
+        FileWriter tmpSdfFileWriter = new FileWriter(tmpSdFile);
+        BufferedWriter tmpSDFBufferedWriter = new BufferedWriter(tmpSdfFileWriter);
+        SDFWriter tmpSdfWriter = new SDFWriter(tmpSDFBufferedWriter);
+        String tmpZincRawFileNextLine = "";
+        String tmpZincRawSmilesCode = "";
+        tmpZincID = "";
+        int tmpZincRawMoleculesCounter = 0;
+        tmpExceptionsCounter = 0;
+        int tmpMoleculesWrittenToSDFCounter = 0;
+        int tmpMoleculesThatAreInCoconutNotInBiogenicCounter = 0;
+        int tmpMoleculesThatMatchInBiogenicSetCounter = 0;
+        while (true) {
+            try {
+                tmpZincRawFileNextLine = tmpZincRawSmilesBufferedReader.readLine();
+                if (Objects.isNull(tmpZincRawFileNextLine)) {
+                    break;
+                }
+                tmpZincRawMoleculesCounter++;
+                if ((tmpZincRawMoleculesCounter % 10000) == 0) {
+                    System.out.println(tmpZincRawMoleculesCounter + " lines were processed already...");
+                }
+                String[] tmpSmilesCodeAndId = tmpZincRawFileNextLine.split(" ");
+                tmpZincRawSmilesCode = tmpSmilesCodeAndId[0].trim();
+                tmpZincID = tmpSmilesCodeAndId[1].trim();
+                if (tmpZincRawSmilesCode.equals("SMILES") || tmpZincID.equals("Name")) {
+                    continue;
+                }
+                IAtomContainer tmpZincRawMoleculeFromSmiles = tmpSmiPar.parseSmiles(tmpZincRawSmilesCode);
+                tmpZincRawMoleculeFromSmiles.setProperty("zinc_id", tmpZincID);
+                String tmpCDKSMILESCode = tmpSmiGen.create(tmpZincRawMoleculeFromSmiles);
+                boolean tmpIsBiogenic = tmpBiogenicSmilesMap.containsKey(tmpCDKSMILESCode);
+                if (!tmpIsBiogenic) {
+                    boolean tmpIsInCOCONUT = tmpCoconutSmilesMap.containsKey(tmpCDKSMILESCode);
+                    if (!tmpIsInCOCONUT) {
+                        tmpSdfWriter.write(tmpZincRawMoleculeFromSmiles);
+                        tmpMoleculesWrittenToSDFCounter++;
+                    } else {
+                        tmpMoleculesThatAreInCoconutNotInBiogenicCounter++;
+                    }
+                } else {
+                    tmpMoleculesThatMatchInBiogenicSetCounter++;
+                }
+            } catch (Exception anException) {
+                GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpZincID, anException);
+                tmpExceptionsCounter++;
+                //continue;
+            }
+        }
+        System.out.println("Processing of the given ZINC dataset done.");
+        tmpOutputWriter.println("Processing of the given ZINC dataset done.");
+        System.out.println(tmpZincRawMoleculesCounter + " molecules were processed.");
+        tmpOutputWriter.println(tmpZincRawMoleculesCounter + " molecules were processed.");
+        System.out.println(tmpExceptionsCounter + " exceptions occurred.");
+        tmpOutputWriter.println(tmpExceptionsCounter + " exceptions occurred.");
+        System.out.println(tmpMoleculesThatMatchInBiogenicSetCounter + " molecules were filtered because they matched a molecule in the biogenic subset.");
+        tmpOutputWriter.println(tmpMoleculesThatMatchInBiogenicSetCounter + " molecules were filtered because they matched a molecule in the biogenic subset.");
+        System.out.println(tmpMoleculesThatAreInCoconutNotInBiogenicCounter + " molecules were not written to the SD " +
+                "file because they are in COCONUT (but not in the ZINC biogenic subset).");
+        tmpOutputWriter.println(tmpMoleculesThatAreInCoconutNotInBiogenicCounter + " molecules were not written to the SD " +
+                "file because they are in COCONUT (but not in the ZINC biogenic subset).");
+        System.out.println(tmpMoleculesWrittenToSDFCounter + " molecules were written to the SD file.");
+        tmpOutputWriter.println(tmpMoleculesWrittenToSDFCounter + " molecules were written to the SD file.");
+        tmpZincRawSmilesFileReader.close();
+        tmpZincRawSmilesBufferedReader.close();
+        tmpSdfWriter.close();
+        //Closing the SDF writer closes all underlying streams
+        /*tmpSDFBufferedWriter.flush();
+        tmpSDFBufferedWriter.close();
+        tmpSdfFileWriter.flush();
+        tmpSdfFileWriter.close();*/
+        tmpOutputWriter.flush();
+        tmpOutputWriter.close();
     }
     //</editor-fold>
     //
