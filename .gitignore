@@ -54,5 +54,9 @@ ZINC_for-sale_without_biogenics_and_COCONUT.sdf
 sugar-containing_ZINC_for-sale_molecules.txt
 sugar-containing_ZINC_in-vitro_molecules.txt
 sugar-containing_ZINC_in-vitro-complete_molecules.txt
+ZINC_for-sale_without_biogenics_and_COCONUT.txt
+ZINC_for-sale_without_biogenics_and_COCONUT_with_stereo.sdf
+ZINC_in-vitro_without_biogenics_and_COCONUT.txt
+ZINC_in-vitro_without_biogenics_and_COCONUT_with_stereo.sdf
 output/
 .ipynb_checkpoints/
