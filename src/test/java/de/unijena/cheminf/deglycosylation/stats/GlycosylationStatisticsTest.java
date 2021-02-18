@@ -28,7 +28,7 @@ package de.unijena.cheminf.deglycosylation.stats;
  * TODO:
  * - general clean-up
  * - write doc (and readme)
- * - Maybe add more stats, any ideas??
+ * - think about which datasets to include in the repository
  */
 
 import com.mongodb.MongoClientSettings;
@@ -51,7 +51,6 @@ import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.GraphUtil;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.io.SDFWriter;
 import org.openscience.cdk.io.iterator.IteratingSDFReader;
 import org.openscience.cdk.isomorphism.DfPattern;
 import org.openscience.cdk.ringsearch.RingSearch;
@@ -61,9 +60,8 @@ import org.openscience.cdk.smiles.SmilesParser;
 import org.openscience.cdk.tools.CDKHydrogenAdder;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 
-import java.awt.*;
+import java.awt.Color;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -3141,7 +3139,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
      */
     @Test
     public void zincCompleteInVitroSubsetStatsBasicsTest() throws Exception {
-        this.doZINCstats("ZINC_in-vitro_subset_2020_Okt_30.txt", "zinc_in-vitro_complete_stats_basics_test");
+        this.doZINCstats("ZINC_in-vitro_flattened.txt", "zinc_in-vitro_complete_stats_basics_test");
     }
 
     /**
@@ -3151,7 +3149,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     @Ignore
     @Test
     public void zincForSaleDatasetCurationTest() throws Exception {
-        this.deleteZINCBiogenicAndCOCONUTMolecules("ZINC_for-sale_picked_subset_2020_Okt_19.txt", 500000,
+        this.filterZINCBiogenicAndCOCONUTMoleculesAndGroupStereoIsomers("ZINC_for-sale_picked_subset_2020_Okt_19.txt", 500000,
                 "ZINC_for-sale_without_biogenics_and_COCONUT.txt", "zinc_for-sale_curation_test");
     }
 
@@ -3164,8 +3162,21 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     @Ignore
     @Test
     public void zincInVitroDatasetCurationTest() throws Exception {
-        this.deleteZINCBiogenicAndCOCONUTMolecules("ZINC_in-vitro_subset_2020_Okt_30.txt", 306347,
+        this.filterZINCBiogenicAndCOCONUTMoleculesAndGroupStereoIsomers("ZINC_in-vitro_subset_2020_Okt_30.txt", 306347,
                 "ZINC_in-vitro_without_biogenics_and_COCONUT.txt", "zinc_in-vitro_curation_test");
+    }
+
+    /**
+     * TODO
+     * Remember to put the curated data set in the resource directory!
+     *
+     * @throws Exception if anything goes wrong
+     */
+    @Ignore
+    @Test
+    public void zincInVitroCompleteDatasetCurationTest() throws Exception {
+        this.groupStereoisomers("ZINC_in-vitro_subset_2020_Okt_30.txt", 306347,
+                "ZINC_in-vitro_flattened.txt", "zinc_in-vitro_complete_curation_test");
     }
     //</editor-fold>
     //</editor-fold>
@@ -3186,7 +3197,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(true);
         tmpOriginalMolecule = tmpSmiPar.parseSmiles(
                 //
-                "O=C1C2=C(C(C3(C(C(C(C)(CC13O)O)O)O)O)=O)C(OC)=CC(O)=C2");
+                "O=C[C@H](O)[C@@H](O)[C@H](O)[C@H](O)COS(=O)(=O)O");
         tmpDepictionGenerator.withSize(2000, 2000)
                 .withFillToFit()
                 .depict(tmpOriginalMolecule)
@@ -3228,7 +3239,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
      * @throws IllegalArgumentException
      * @throws IOException
      */
-    public void deleteZINCBiogenicAndCOCONUTMolecules(
+    public void filterZINCBiogenicAndCOCONUTMoleculesAndGroupStereoIsomers(
             String anOriginalDataSetFileName,
             int anOriginalDataSetSize,
             String aCuratedDataSetFileName,
@@ -3451,6 +3462,111 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         System.out.println("Done, shutting down.");
         tmpZINCMoleculesWriter.flush();
         tmpZINCMoleculesWriter.close();
+        tmpOutputWriter.flush();
+        tmpOutputWriter.close();
+    }
+
+    /**
+     * TODO
+     */
+    public void groupStereoisomers(
+            String anOriginalDataSetFileName,
+            int anOriginalDataSetSize,
+            String aCuratedDataSetFileName,
+            String anOutputFolderName
+    ) throws IllegalArgumentException, IOException {
+        ClassLoader tmpClassLoader = this.getClass().getClassLoader();
+        //Prints output folder to console
+        String tmpOutputFolderPath = this.initializeOutputFolderAndLogger(anOutputFolderName);
+        PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
+        //Loading analysed dataset
+        System.out.println("Loading and processing the given dataset now...");
+        tmpOutputWriter.println("Loading and processing the given dataset now...");
+        File tmpOriginalDataSetSmilesFile = null;
+        try {
+            tmpOriginalDataSetSmilesFile = new File(tmpClassLoader.getResource(anOriginalDataSetFileName).getFile());
+        } catch (NullPointerException aNullPointerException) {
+            GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, aNullPointerException.toString(), aNullPointerException);
+            System.out.println("Original data set file could not be found. Test is ignored.");
+            Assume.assumeTrue(false);
+        }
+        System.out.println("Data set found at: " + tmpOriginalDataSetSmilesFile.getAbsolutePath());
+        FileReader tmpOriginalDataSetSmilesFileReader = new FileReader(tmpOriginalDataSetSmilesFile);
+        BufferedReader tmpOriginalDataSetSmilesBufferedReader = new BufferedReader(tmpOriginalDataSetSmilesFileReader);
+        SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
+        SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Unique); //Unique does not encode stereochemistry! Absolute would do
+        //key: unique SMILES string (does not encode stereochemistry!)
+        // object: HashMap of ID of the first stereo isomer encountered and number of stereo-isomers encountered
+        HashMap<String, HashMap<String, Object>> tmpSmilesMap = new HashMap<>((int)(anOriginalDataSetSize*1.1), 1.0f);
+        String tmpOriginalDataSetFileNextLine = "";
+        String tmpOriginalDataSetSmilesCode = "";
+        String tmpID = "";
+        int tmpMoleculesCounter = 0;
+        int tmpExceptionsCounter = 0;
+        while (true) {
+            try {
+                tmpOriginalDataSetFileNextLine = tmpOriginalDataSetSmilesBufferedReader.readLine();
+                if (Objects.isNull(tmpOriginalDataSetFileNextLine)) {
+                    break;
+                }
+                if (tmpOriginalDataSetFileNextLine.contains("SMILES")) {
+                    continue;
+                }
+                tmpMoleculesCounter++;
+                if ((tmpMoleculesCounter % 10000) == 0) {
+                    System.out.println(tmpMoleculesCounter + " lines were processed already...");
+                }
+                String[] tmpSmilesCodeAndId = tmpOriginalDataSetFileNextLine.split(" ");
+                tmpOriginalDataSetSmilesCode = tmpSmilesCodeAndId[0].trim();
+                tmpID = tmpSmilesCodeAndId[1].trim();
+                IAtomContainer tmpMoleculeFromSmiles = tmpSmiPar.parseSmiles(tmpOriginalDataSetSmilesCode);
+                String tmpCDKSMILESCode = tmpSmiGen.create(tmpMoleculeFromSmiles);
+                if (tmpSmilesMap.containsKey(tmpCDKSMILESCode)) {
+                    HashMap<String, Object> tmpInnerMap = tmpSmilesMap.get(tmpCDKSMILESCode);
+                    int tmpStereoIsomerNumber = (int) tmpInnerMap.get("FREQUENCY");
+                    tmpInnerMap.put("FREQUENCY", (tmpStereoIsomerNumber + 1));
+                    continue;
+                } else {
+                    HashMap<String, Object> tmpInnerMap = new HashMap<>(3, 1.0f);
+                    tmpInnerMap.put("ID", tmpID);
+                    tmpInnerMap.put("FREQUENCY", 1);
+                    tmpSmilesMap.put(tmpCDKSMILESCode, tmpInnerMap);
+                    continue;
+                }
+            } catch (Exception anException) {
+                GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
+                tmpExceptionsCounter++;
+                //continue;
+            }
+        }
+        tmpOriginalDataSetSmilesFileReader.close();
+        tmpOriginalDataSetSmilesBufferedReader.close();
+        System.out.println("Processing of the given dataset done.");
+        tmpOutputWriter.println("Processing of the given dataset done.");
+        System.out.println(tmpMoleculesCounter + " molecules were processed.");
+        tmpOutputWriter.println(tmpMoleculesCounter + " molecules were processed.");
+        System.out.println(tmpExceptionsCounter + " exceptions occurred.");
+        tmpOutputWriter.println(tmpExceptionsCounter + " exceptions occurred.");
+        System.out.println(tmpSmilesMap.size() + " SMILES codes have been put into memory.");
+        tmpOutputWriter.println(tmpSmilesMap.size() + " SMILES codes have been put into memory.");
+        //Writing to file
+        System.out.println("Writing the curated data set to file now...");
+        PrintWriter tmpMoleculesWriter = this.initializeOutputFile(tmpOutputFolderPath, aCuratedDataSetFileName);
+        int tmpCounter = 0;
+        tmpID = "";
+        for (String tmpSmilesCode : tmpSmilesMap.keySet()) {
+            if ((tmpCounter % 10000) == 0) {
+                System.out.println(tmpCounter + " lines were processed already...");
+            }
+            HashMap<String, Object> tmpInnerMap = tmpSmilesMap.get(tmpSmilesCode);
+            int tmpStereoIsomerNumber = (int) tmpInnerMap.get("FREQUENCY");
+            tmpID = (String) tmpInnerMap.get("ID");
+            tmpMoleculesWriter.println(tmpSmilesCode + " " + tmpID + " " + tmpStereoIsomerNumber);
+            tmpCounter++;
+        }
+        System.out.println("Done, shutting down.");
+        tmpMoleculesWriter.flush();
+        tmpMoleculesWriter.close();
         tmpOutputWriter.flush();
         tmpOutputWriter.close();
     }

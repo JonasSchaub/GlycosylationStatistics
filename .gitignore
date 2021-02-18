@@ -58,5 +58,6 @@ ZINC_for-sale_without_biogenics_and_COCONUT.txt
 ZINC_for-sale_without_biogenics_and_COCONUT_with_stereo.sdf
 ZINC_in-vitro_without_biogenics_and_COCONUT.txt
 ZINC_in-vitro_without_biogenics_and_COCONUT_with_stereo.sdf
+ZINC_in-vitro_flattened.txt
 output/
 .ipynb_checkpoints/
