@@ -48,6 +48,7 @@ import org.junit.Test;
 import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.depict.DepictionGenerator;
 import org.openscience.cdk.exception.CDKException;
+import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.graph.GraphUtil;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
@@ -85,7 +86,11 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 /**
- * TODO
+ * This test class uses the <a href="https://doi.org/10.1186/s13321-020-00467-y"
+ * >"Sugar Removal Utility (SRU)"</a> to detect glycosylation in various databases, mainly the <a href="https://doi.org/10.1186/s13321-020-00478-9"
+ * >"COlleCtion of Open Natural prodUcTs (COCONUT)"</a>. It is imported via MongoDB. Therefore, MongoDB needs to be running
+ * on the platform. See credentials for making the connection in the private static final constants.
+ * Also, most of the resource files (different data sets) are not included in the repository.
  *
  * @author Jonas Schaub
  * @version 1.0.0.0
@@ -134,12 +139,12 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     private static final String SMILES_CODE_KEY = "unique_smiles";
 
     /**
-     * TODO
+     * Name of the ZINC 'biogenic' subset SMILES file in the resource directory
      */
     private static final String ZINC_BIOGENIC_SUBSET_FILE_NAME = "ZINC_biogenic_subset_2020_Okt_17.txt";
 
     /**
-     * TODO
+     * Separator for created CSV output files
      */
     private static final String OUTPUT_FILE_SEPARATOR = ";";
 
@@ -152,8 +157,10 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     //<editor-fold desc="Tests involving databases">
     //<editor-fold desc="COCONUT">
     /**
-     * TODO
-     * Ignored because many files are written
+     * This test method visualises deglycosylation results of all sugar-containing molecules in COCONUT. For each of these
+     * molecules, an image file depicting the original structure and one depicting the deglycosylated molecule (aglycon)
+     * are created in the respective output directory. To run this test, remove the JUnit @Ignore tag that is set because
+     * this test creates many files. Test is ignored, if no connection to MongoDB can be made.
      *
      * @throws Exception if anything goes wrong
      */
@@ -202,7 +209,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 if (tmpHasAnyTypeOfSugar) {
                     tmpHasAnyTypeOfSugarsCounter++;
                     tmpDepictionGenerator.depict(tmpMolecule).writeTo(tmpOutputFolderPath + File.separator + tmpID + ".png");
-                    tmpDepictionGenerator.depict(tmpDeglycosylatedClone).writeTo(tmpOutputFolderPath + File.separator + tmpID + "_deglycosylated.png");
+                    tmpDepictionGenerator.depict(tmpDeglycosylatedClone).writeTo(tmpOutputFolderPath
+                            + File.separator + tmpID + "_deglycosylated.png");
                 }
             } catch (Exception anException) {
                 GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
@@ -221,8 +229,10 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     }
 
     /**
-     * TODO
-     * Consistency tested and approved
+     * This test method does some basic glycosylation statistics of COCONUT. It calculates: How many molecules have sugars,
+     * circular sugars, linear sugars, both, and how many molecules are basically sugars. All statistics are printed to
+     * console and also compiled in an output file.
+     * Test is ignored, if no connection to MongoDB can be made.
      *
      * @throws Exception if anything goes wrong
      */
@@ -254,13 +264,12 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         int tmpHasAnyTypeOfSugarsCounter = 0;
         List<String> tmpHasAnyTypeOfSugarsCNPs = new ArrayList<>(50000);
         int tmpHasNoSugarsCounter = 0;
-        //List<String> tmpHasNoSugarsCNPs = new ArrayList<>(400000);
         int tmpHasCircularSugarsCounter = 0;
         List<String> tmpHasCircularSugarsCNPs = new ArrayList<>(50000);
         int tmpHasLinearSugarsCounter = 0;
-        List<String> tmpHasLinearSugarsCNPs = new ArrayList<>(3000);
+        List<String> tmpHasLinearSugarsCNPs = new ArrayList<>(2000);
         int tmpHasCircularAndLinearSugarsCounter = 0;
-        List<String> tmpHasCircularAndLinearSugarsCNPs = new ArrayList<>(2000);
+        List<String> tmpHasCircularAndLinearSugarsCNPs = new ArrayList<>(700);
         int tmpBasicallyASugarCounter = 0;
         List<String> tmpBasicallyASugarCNPs = new ArrayList<>(2000);
         while (tmpCursor.hasNext()) {
@@ -300,12 +309,10 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                     }
                 } else {
                     tmpHasNoSugarsCounter++;
-                    //tmpHasNoSugarsCNPs.add(tmpID);
                 }
             } catch (Exception anException) {
                 GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                 tmpExceptionsCounter++;
-                //continue;
             }
         }
         System.out.println();
@@ -338,8 +345,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         tmpOutputWriter.println();
         tmpOutputWriter.println("Sugar-containing molecules: " + tmpHasAnyTypeOfSugarsCNPs);
         tmpOutputWriter.println();
-        //tmpOutputWriter.println("No sugar containing molecules: " + tmpHasNoSugarsCNPs);
-        //tmpOutputWriter.println();
         tmpOutputWriter.println("Circular-sugar-containing molecules: " + tmpHasCircularSugarsCNPs);
         tmpOutputWriter.println();
         tmpOutputWriter.println("Linear-sugar-containing molecules: " + tmpHasLinearSugarsCNPs);
@@ -354,8 +359,14 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     }
 
     /**
-     * TODO
-     * Consistency tested and approved
+     * This test method does some glycosylation statistics focused on circular sugars of COCONUT. It calculates:
+     * How many molecules have circular sugars, only circular sugars (no linear ones), terminal circular sugars,
+     * only terminal circular sugars (no non-terminal circular ones), non-terminal circular sugars, only non-terminal
+     * circular sugars (no terminal circular ones), terminal and non-terminal circular sugars, circular sugars with
+     * glycosidic bonds, terminal circular sugars with glycosidic bonds, non-terminal circular sugars with glycosidic
+     * bonds, both, spiro sugars, and how many molecules qualify for the SRU glycosidic bond exemption. All statistics
+     * are printed to console and also compiled in an output file.
+     * Test is ignored, if no connection to MongoDB can be made.
      *
      * @throws Exception if anything goes wrong
      */
@@ -387,13 +398,13 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         int tmpHasCircularSugarsCounter = 0;
         List<String> tmpHasCircularSugarsCNPs = new ArrayList<>(50000);
         int tmpHasTerminalCircularSugarsCounter = 0;
-        List<String> tmpHasTerminalCircularSugarsCNPs = new ArrayList<>(50000);
+        List<String> tmpHasTerminalCircularSugarsCNPs = new ArrayList<>(40000);
         int tmpHasNonTerminalCircularSugarsCounter = 0;
-        List<String> tmpHasNonTerminalCircularSugarsCNPs = new ArrayList<>(50000);
+        List<String> tmpHasNonTerminalCircularSugarsCNPs = new ArrayList<>(12000);
         int tmpHasOnlyTerminalCircularSugarsCounter = 0;
-        List<String> tmpHasOnlyTerminalCircularSugarsCNPs = new ArrayList<>(50000);
+        List<String> tmpHasOnlyTerminalCircularSugarsCNPs = new ArrayList<>(40000);
         int tmpHasOnlyNonTerminalCircularSugarsCounter = 0;
-        List<String> tmpHasOnlyNonTerminalCircularSugarsCNPs = new ArrayList<>(50000);
+        List<String> tmpHasOnlyNonTerminalCircularSugarsCNPs = new ArrayList<>(10000);
         int tmpHasTerminalAndNonTerminalCircularSugarsCounter = 0;
         List<String> tmpHasTerminalAndNonTerminalCircularSugarsCNPs = new ArrayList<>(5000);
         int tmpHasOnlyCircularSugarsCounter = 0;
@@ -401,13 +412,13 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         int tmpHasGlycosidicBondCounter = 0;
         List<String> tmpHasGlycosidicBondCNPs = new ArrayList<>(50000);
         int tmpHasGlycosidicBondOnTerminalSugarCounter = 0;
-        List<String> tmpHasGlycosidicBondOnTerminalSugarCNPs = new ArrayList<>(50000);
+        List<String> tmpHasGlycosidicBondOnTerminalSugarCNPs = new ArrayList<>(40000);
         int tmpHasGlycosidicBondOnNonTerminalSugarCounter = 0;
-        List<String> tmpHasGlycosidicBondOnNonTerminalSugarCNPs = new ArrayList<>(50000);
+        List<String> tmpHasGlycosidicBondOnNonTerminalSugarCNPs = new ArrayList<>(12000);
         int tmpGlycosidicBondExemptionCounter = 0;
-        List<String> tmpGlycosidicBondExemptionCNPs = new ArrayList<>(120);
+        List<String> tmpGlycosidicBondExemptionCNPs = new ArrayList<>(100);
         int tmpHasSpiroSugarCounter = 0;
-        List<String> tmpHasSpiroSugarCNPs = new ArrayList<>(100);
+        List<String> tmpHasSpiroSugarCNPs = new ArrayList<>(1000);
         while (tmpCursor.hasNext()) {
             tmpID = "[unidentified]";
             try {
@@ -514,7 +525,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             } catch (Exception anException) {
                 GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                 tmpExceptionsCounter++;
-                //continue;
             }
         }
         System.out.println();
@@ -532,7 +542,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         tmpOutputWriter.println("Only circular sugar containing molecules counter: " + tmpHasOnlyCircularSugarsCounter);
         System.out.println("The remaining " + (tmpHasCircularSugarsCounter - tmpHasOnlyCircularSugarsCounter) + " molecules " +
                 " contain circular sugars and also linear sugar moieties.");
-        tmpOutputWriter.println("The remaining " + (tmpHasCircularSugarsCounter - tmpHasOnlyCircularSugarsCounter) + "molecules " +
+        tmpOutputWriter.println("The remaining " + (tmpHasCircularSugarsCounter - tmpHasOnlyCircularSugarsCounter) + " molecules " +
                 "contain circular sugars and also linear sugar moieties.");
         System.out.println("Terminal circular sugars containing molecules counter: " + tmpHasTerminalCircularSugarsCounter);
         tmpOutputWriter.println("Terminal circular sugars containing molecules counter: " + tmpHasTerminalCircularSugarsCounter);
@@ -602,9 +612,16 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         Assert.assertTrue(tmpHasBoth >= 0);
     }
 
+    //TODO: Carry on writing doc here!
     /**
-     * TODO
-     * Consistency tested and approved
+     * This test method does some glycosylation statistics focused on linear sugars of COCONUT. It calculates:
+     * How many molecules have circular sugars, only circular sugars (no linear ones), terminal circular sugars,
+     * only terminal circular sugars (no non-terminal circular ones), non-terminal circular sugars, only non-terminal
+     * circular sugars (no terminal circular ones), terminal and non-terminal circular sugars, circular sugars with
+     * glycosidic bonds, terminal circular sugars with glycosidic bonds, non-terminal circular sugars with glycosidic
+     * bonds, both, spiro sugars, and how many molecules qualify for the SRU glycosidic bond exemption. All statistics
+     * are printed to console and also compiled in an output file.
+     * Test is ignored, if no connection to MongoDB can be made.
      *
      * @throws Exception if anything goes wrong
      */
@@ -3179,6 +3196,216 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 "ZINC_in-vitro_flattened.txt", "zinc_in-vitro_complete_curation_test");
     }
     //</editor-fold>
+    //<editor-fold desc="ChEMBL">
+    /**
+     * TODO
+     * Remember to put the curated data set in the resource directory!
+     */
+    @Ignore
+    @Test
+    public void chemblCurationTest() throws Exception {
+        ClassLoader tmpClassLoader = this.getClass().getClassLoader();
+        //Prints output folder to console
+        String tmpOutputFolderPath = this.initializeOutputFolderAndLogger("chembl_curation_test");
+        PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
+        //Loading analysed dataset
+        System.out.println("Loading and processing the given dataset now...");
+        tmpOutputWriter.println("Loading and processing the given dataset now...");
+        File tmpOriginalDataSetSmilesFile = null;
+        try {
+            tmpOriginalDataSetSmilesFile = new File(tmpClassLoader.getResource("chembl_28.sdf").getFile());
+        } catch (NullPointerException aNullPointerException) {
+            GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, aNullPointerException.toString(), aNullPointerException);
+            System.out.println("Original data set file could not be found. Test is ignored.");
+            Assume.assumeTrue(false);
+        }
+        System.out.println("Data set found at: " + tmpOriginalDataSetSmilesFile.getAbsolutePath());
+        FileReader tmpOriginalDataSetSmilesFileReader = new FileReader(tmpOriginalDataSetSmilesFile);
+        BufferedReader tmpOriginalDataSetSmilesBufferedReader = new BufferedReader(tmpOriginalDataSetSmilesFileReader);
+        IteratingSDFReader tmpSDFReader = new IteratingSDFReader(tmpOriginalDataSetSmilesBufferedReader, DefaultChemObjectBuilder.getInstance(), true);
+        SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Unique); //Unique does not encode stereochemistry! Absolute would do
+        //key: unique SMILES string (does not encode stereochemistry!)
+        //object: HashMap of ID of the first stereo isomer encountered and number of stereo-isomers encountered
+        HashMap<String, HashMap<String, Object>> tmpSmilesMap = new HashMap<>((int)(2066376*1.1), 1.0f);
+        String tmpID = "";
+        int tmpMoleculesCounter = 0;
+        int tmpExceptionsCounter = 0;
+        while (tmpSDFReader.hasNext()) {
+            try {
+                IAtomContainer tmpMoleculeFromFile = tmpSDFReader.next();
+                if (Objects.isNull(tmpMoleculeFromFile)) {
+                    break;
+                }
+                tmpMoleculesCounter++;
+                if ((tmpMoleculesCounter % 10000) == 0) {
+                    System.out.println(tmpMoleculesCounter + " molecules were processed already...");
+                }
+                tmpID = tmpMoleculeFromFile.getProperty("chembl_id");
+                String tmpCDKSMILESCode = tmpSmiGen.create(tmpMoleculeFromFile);
+                if (tmpSmilesMap.containsKey(tmpCDKSMILESCode)) {
+                    HashMap<String, Object> tmpInnerMap = tmpSmilesMap.get(tmpCDKSMILESCode);
+                    int tmpStereoIsomerNumber = (int) tmpInnerMap.get("FREQUENCY");
+                    tmpInnerMap.put("FREQUENCY", (tmpStereoIsomerNumber + 1));
+                    continue;
+                } else {
+                    HashMap<String, Object> tmpInnerMap = new HashMap<>(3, 1.0f);
+                    tmpInnerMap.put("ID", tmpID);
+                    tmpInnerMap.put("FREQUENCY", 1);
+                    tmpSmilesMap.put(tmpCDKSMILESCode, tmpInnerMap);
+                    continue;
+                }
+            } catch (Exception anException) {
+                GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
+                tmpExceptionsCounter++;
+                //continue;
+            }
+        }
+        tmpOriginalDataSetSmilesFileReader.close();
+        tmpOriginalDataSetSmilesBufferedReader.close();
+        System.out.println("Processing of the given dataset done.");
+        tmpOutputWriter.println("Processing of the given dataset done.");
+        System.out.println(tmpMoleculesCounter + " molecules were processed.");
+        tmpOutputWriter.println(tmpMoleculesCounter + " molecules were processed.");
+        System.out.println(tmpExceptionsCounter + " exceptions occurred.");
+        tmpOutputWriter.println(tmpExceptionsCounter + " exceptions occurred.");
+        System.out.println(tmpSmilesMap.size() + " SMILES codes have been put into memory.");
+        tmpOutputWriter.println(tmpSmilesMap.size() + " SMILES codes have been put into memory.");
+        //Writing to file
+        System.out.println("Writing the curated data set to file now...");
+        PrintWriter tmpMoleculesWriter = this.initializeOutputFile(tmpOutputFolderPath, "chembl_28_curated.txt");
+        int tmpCounter = 0;
+        tmpID = "";
+        for (String tmpSmilesCode : tmpSmilesMap.keySet()) {
+            if ((tmpCounter % 10000) == 0) {
+                System.out.println(tmpCounter + " lines were processed already...");
+            }
+            HashMap<String, Object> tmpInnerMap = tmpSmilesMap.get(tmpSmilesCode);
+            int tmpStereoIsomerNumber = (int) tmpInnerMap.get("FREQUENCY");
+            tmpID = (String) tmpInnerMap.get("ID");
+            tmpMoleculesWriter.println(tmpSmilesCode + " " + tmpID + " " + tmpStereoIsomerNumber);
+            tmpCounter++;
+        }
+        System.out.println("Done, shutting down.");
+        tmpMoleculesWriter.flush();
+        tmpMoleculesWriter.close();
+        tmpOutputWriter.flush();
+        tmpOutputWriter.close();
+    }
+
+    /**
+     * TODO
+     * 2066376 structures in original set, flattened and grouped to 1982219 structures
+     */
+    @Test
+    public void chemblStatisticsTest() throws Exception {
+        this.doZINCstats("chembl_28_curated.txt", "chembl_stats_test");
+    }
+    //</editor-fold>
+    //
+    //<editor-fold desc="DrugBank">
+    /**
+     * TODO
+     */
+    @Ignore
+    @Test
+    public void drugBankCurationTest() throws Exception {
+        ClassLoader tmpClassLoader = this.getClass().getClassLoader();
+        //Prints output folder to console
+        String tmpOutputFolderPath = this.initializeOutputFolderAndLogger("drugbank_curation_test");
+        PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
+        //Loading analysed dataset
+        System.out.println("Loading and processing the given dataset now...");
+        tmpOutputWriter.println("Loading and processing the given dataset now...");
+        File tmpOriginalDataSetSmilesFile = null;
+        try {
+            tmpOriginalDataSetSmilesFile = new File(tmpClassLoader.getResource("drugbank_all_structures_2021_03_11.sdf").getFile());
+        } catch (NullPointerException aNullPointerException) {
+            GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, aNullPointerException.toString(), aNullPointerException);
+            System.out.println("Original data set file could not be found. Test is ignored.");
+            Assume.assumeTrue(false);
+        }
+        System.out.println("Data set found at: " + tmpOriginalDataSetSmilesFile.getAbsolutePath());
+        FileReader tmpOriginalDataSetSmilesFileReader = new FileReader(tmpOriginalDataSetSmilesFile);
+        BufferedReader tmpOriginalDataSetSmilesBufferedReader = new BufferedReader(tmpOriginalDataSetSmilesFileReader);
+        IteratingSDFReader tmpSDFReader = new IteratingSDFReader(tmpOriginalDataSetSmilesBufferedReader, DefaultChemObjectBuilder.getInstance(), true);
+        SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Unique); //Unique does not encode stereochemistry! Absolute would do
+        //key: unique SMILES string (does not encode stereochemistry!)
+        //object: HashMap of ID of the first stereo isomer encountered and number of stereo-isomers encountered
+        HashMap<String, HashMap<String, Object>> tmpSmilesMap = new HashMap<>((int)(11172*1.1), 1.0f);
+        String tmpID = "";
+        int tmpMoleculesCounter = 0;
+        int tmpExceptionsCounter = 0;
+        while (tmpSDFReader.hasNext()) {
+            try {
+                IAtomContainer tmpMoleculeFromFile = tmpSDFReader.next();
+                if (Objects.isNull(tmpMoleculeFromFile)) {
+                    break;
+                }
+                tmpMoleculesCounter++;
+                if ((tmpMoleculesCounter % 10000) == 0) {
+                    System.out.println(tmpMoleculesCounter + " molecules were processed already...");
+                }
+                tmpID = tmpMoleculeFromFile.getProperty("DATABASE_ID");
+                String tmpCDKSMILESCode = tmpSmiGen.create(tmpMoleculeFromFile);
+                if (tmpSmilesMap.containsKey(tmpCDKSMILESCode)) {
+                    HashMap<String, Object> tmpInnerMap = tmpSmilesMap.get(tmpCDKSMILESCode);
+                    int tmpStereoIsomerNumber = (int) tmpInnerMap.get("FREQUENCY");
+                    tmpInnerMap.put("FREQUENCY", (tmpStereoIsomerNumber + 1));
+                    continue;
+                } else {
+                    HashMap<String, Object> tmpInnerMap = new HashMap<>(3, 1.0f);
+                    tmpInnerMap.put("ID", tmpID);
+                    tmpInnerMap.put("FREQUENCY", 1);
+                    tmpSmilesMap.put(tmpCDKSMILESCode, tmpInnerMap);
+                    continue;
+                }
+            } catch (Exception anException) {
+                GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
+                tmpExceptionsCounter++;
+                //continue;
+            }
+        }
+        tmpOriginalDataSetSmilesFileReader.close();
+        tmpOriginalDataSetSmilesBufferedReader.close();
+        System.out.println("Processing of the given dataset done.");
+        tmpOutputWriter.println("Processing of the given dataset done.");
+        System.out.println(tmpMoleculesCounter + " molecules were processed.");
+        tmpOutputWriter.println(tmpMoleculesCounter + " molecules were processed.");
+        System.out.println(tmpExceptionsCounter + " exceptions occurred.");
+        tmpOutputWriter.println(tmpExceptionsCounter + " exceptions occurred.");
+        System.out.println(tmpSmilesMap.size() + " SMILES codes have been put into memory.");
+        tmpOutputWriter.println(tmpSmilesMap.size() + " SMILES codes have been put into memory.");
+        //Writing to file
+        System.out.println("Writing the curated data set to file now...");
+        PrintWriter tmpMoleculesWriter = this.initializeOutputFile(tmpOutputFolderPath, "drugbank_curated.txt");
+        int tmpCounter = 0;
+        tmpID = "";
+        for (String tmpSmilesCode : tmpSmilesMap.keySet()) {
+            if ((tmpCounter % 10000) == 0) {
+                System.out.println(tmpCounter + " lines were processed already...");
+            }
+            HashMap<String, Object> tmpInnerMap = tmpSmilesMap.get(tmpSmilesCode);
+            int tmpStereoIsomerNumber = (int) tmpInnerMap.get("FREQUENCY");
+            tmpID = (String) tmpInnerMap.get("ID");
+            tmpMoleculesWriter.println(tmpSmilesCode + " " + tmpID + " " + tmpStereoIsomerNumber);
+            tmpCounter++;
+        }
+        System.out.println("Done, shutting down.");
+        tmpMoleculesWriter.flush();
+        tmpMoleculesWriter.close();
+        tmpOutputWriter.flush();
+        tmpOutputWriter.close();
+    }
+
+    /**
+     *
+     */
+    @Test
+    public void drugbankStatisticsTest() throws Exception {
+        this.doZINCstats("drugbank_curated.txt", "drugbank_statistics_test");
+    }
+    //</editor-fold>
+    //
     //</editor-fold>
     //
     //<editor-fold desc="Public methods">
@@ -3496,7 +3723,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Unique); //Unique does not encode stereochemistry! Absolute would do
         //key: unique SMILES string (does not encode stereochemistry!)
-        // object: HashMap of ID of the first stereo isomer encountered and number of stereo-isomers encountered
+        //object: HashMap of ID of the first stereo isomer encountered and number of stereo-isomers encountered
         HashMap<String, HashMap<String, Object>> tmpSmilesMap = new HashMap<>((int)(anOriginalDataSetSize*1.1), 1.0f);
         String tmpOriginalDataSetFileNextLine = "";
         String tmpOriginalDataSetSmilesCode = "";
@@ -3588,7 +3815,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         //Prints output folder to console
         String tmpOutputFolderPath = this.initializeOutputFolderAndLogger(anOutputFolderName);
         PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
-        PrintWriter tmpSugarContainingZINCMoleculesWriter = this.initializeOutputFile(tmpOutputFolderPath, "sugar-containing_ZINC_molecules.txt");
+        PrintWriter tmpSugarContainingZINCMoleculesWriter = this.initializeOutputFile(tmpOutputFolderPath, "sugar-containing_molecules.txt");
         FileReader tmpZincSmilesFileReader = new FileReader(tmpZincSmilesFile);
         BufferedReader tmpZincSmilesBufferedReader = new BufferedReader(tmpZincSmilesFileReader);
         //All settings in default
@@ -3648,6 +3875,9 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                     tmpNrOfStereoIsomers = Integer.valueOf(tmpSmilesCodeAndId[2]);
                 }
                 tmpMolecule = tmpSmiPar.parseSmiles(tmpZincFileSmilesCode);
+                if (!ConnectivityChecker.isConnected(tmpMolecule)) {
+                    tmpMolecule = SugarRemovalUtility.selectBiggestUnconnectedFragment(tmpMolecule);
+                }
                 //note: per default, circular sugars having too few exocyclic oxygen atoms attached are not detected/removed/counted!
                 // note also: per default, linear sugars in rings, those too small or too big, and acidic linear sugars are not detected/removed/counted!
                 IAtomContainer tmpDeglycosylatedClone = tmpSugarRemovalUtil.removeCircularAndLinearSugars(tmpMolecule, true);
