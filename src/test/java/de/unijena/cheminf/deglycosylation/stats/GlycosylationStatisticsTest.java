@@ -91,6 +91,8 @@ import java.util.logging.SimpleFormatter;
  * >"COlleCtion of Open Natural prodUcTs (COCONUT)"</a>. It is imported via MongoDB. Therefore, MongoDB needs to be running
  * on the platform. See credentials for making the connection in the private static final constants.
  * Also, most of the resource files (different data sets) are not included in the repository.
+ * Results obtained with these analyses are published in <a href="https://doi.org/10.3390/biom11040486"
+ *  * >"Description and Analysis of Glycosidic Residues in the Largest Open Natural Products Database (Schaub et al. 2021)"</a>
  *
  * @author Jonas Schaub
  * @version 1.0.0.0
