@@ -1,6 +1,6 @@
 # Description and Analysis of Glycosidic Residues in the Largest Open Natural Products Database
 
-##### Systematic detection of sugar moieties in the COlleCtion of Open Natural prodUcTs (COCONUT) database
+##### Code for automated, systematic detection of sugar moieties in the COlleCtion of Open Natural prodUcTs (COCONUT) database
 
 ## Description
 This repository contains Java source code for automatically detecting and analysing glyosidic moieties <i>in silico</i> in 
@@ -13,7 +13,7 @@ are also supplied in this repository.
 
 ## Contents
 ### Test code for glycosylation statistics generation (source code)
-blabla
+[coming soon]
 
 ## Installation
 This is a Maven project. In order to do the described analyses on your own, download or clone the repository and
