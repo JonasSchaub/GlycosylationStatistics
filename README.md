@@ -1,19 +1,34 @@
 # Description and Analysis of Glycosidic Residues in the Largest Open Natural Products Database
-
 ##### Code for automated, systematic detection of sugar moieties in the COlleCtion of Open Natural prodUcTs (COCONUT) database
 
 ## Description
 This repository contains Java source code for automatically detecting and analysing glyosidic moieties <i>in silico</i> in 
-the largest open natural products database COCONUT using the [Sugar Removal Utility](https://doi.org/10.1186/s13321-020-00467-y), 
+the largest open natural products database COCONUT, 
 as described in [Schaub, J.; Zielesny, A.; Steinbeck, C.; Sorokina, M. Description and Analysis of Glycosidic Residues in the Largest 
-Open Natural Products Database. Biomolecules 2021, 11, 486. https://doi.org/10.3390/biom11040486](https://doi.org/10.3390/biom11040486).
+Open Natural Products Database. Biomolecules 2021, 11, 486. https://doi.org/10.3390/biom11040486](https://doi.org/10.3390/biom11040486),
+using the [Sugar Removal Utility](https://doi.org/10.1186/s13321-020-00467-y).
 <br>Additionally, similar analyses are done with datasets from the ZINC15 database, DrugBank, and ChEMBL.
 <br>Python scripts and Jupyter notebooks for the curation of some used datasets and analysing and visualising the results 
 are also supplied in this repository.
 
 ## Contents
-### Test code for glycosylation statistics generation (source code)
-[coming soon]
+### Source code for glycosylation statistics analysis
+In the directory <i>/src/test/java/de/unijena/cheminf/deglycosylation/stats/</i> the class 
+<i>GlycosylationStatisticsTest</i> can be found. It is a JUnit test class with multiple test methods that can be run in 
+a script-like fashion to do the various analyses. Using an IDE like e.g. IntelliJ is recommended. Please note that some 
+directories etc. will need to be adjusted and some datasets be put into the <i>/src/test/resources/</i> directory 
+(see below) to run the tests yourself.<p>
+
+The directory <i>/src/main/java/de/unijena/cheminf/deglycosylation/</i> contains the class <i>SugarRemovalUtility</i> which
+is used for the identification of sugar moieties in the analysed molecules. This version is only a copy and the full 
+SugarRemovalUtility sources and additional resources can be found in its own GitHub repository: 
+[https://github.com/JonasSchaub/SugarRemoval](https://github.com/JonasSchaub/SugarRemoval) <p>
+
+The directory <i>/Python_scripts_and_notebooks/</i> contains a python script for picking a diverse subset of a larger 
+datasets using the [RDKit MaxMin algorithm](http://www.rdkit.org/docs/GettingStartedInPython.html#picking-diverse-molecules-using-fingerprints).
+For the reported analyses, it has been used to reduce in size the downloaded ZINC "in-vitro" subset while preserving 
+diversity. Additionally, two Jupyter Notebooks can be found in this directory that have been used to analyse and visualise 
+some of the test results. 
 
 ## Installation
 This is a Maven project. In order to do the described analyses on your own, download or clone the repository and
@@ -26,26 +41,33 @@ database imported to it. The respective MongoDB dump can be downloaded at
 also ease the installation of required libraries, like the open-source cheminformatics software [RDKit](http://www.rdkit.org). 
 
 ## Required datasets
-* COCONUT: To run the COCONUT-analysing tests, a MongoDB instance needs to be running on your platform and the COCONUT NP
+* **COCONUT**: To run the COCONUT-analysing tests, a MongoDB instance needs to be running on your platform and the COCONUT NP
   database imported to it. The respective MongoDB dump can be downloaded at
   [https://coconut.naturalproducts.net/download](https://coconut.naturalproducts.net/download). Please check and adjust 
   the credentials for the connection to MongoDB in the code and adjust them if needed. One test method also 
   analyses COCONUT in the form of an SDF. This file can also be obtained from the given webpage and needs to be placed 
-  in the <i>src\test\resources</i> directory.
-* ZINC15: A list of available ZINC15 subsets can be found [here](http://zinc15.docking.org/substances/subsets/). It is 
+  in the <i>/src/test/resources/</i> directory.
+* **ZINC15**: A list of available ZINC15 subsets can be found [here](http://zinc15.docking.org/substances/subsets/). It is 
   recommended to use the program [wget](https://www.gnu.org/software/wget/) to download the subsets. All subsets were 
   downloaded as SMILES files.
     * ZINC "for-sale": A part of the ZINC "for-sale" subset was downloaded for the published analyses and further reduced
-      in size using the ZINC_for-sale_curation.py script located in the <i>Python_scripts_and_notebooks</i> directory. 
+      in size using the <i>ZINC_for-sale_curation.py</i> script located in the <i>/Python_scripts_and_notebooks/</i> directory. 
       One test method curates the dataset further. After this is done, the curated datasets needs to be placed in the
-      <i>src\test\resources</i> directory for it to be analysed by other test methods.
+      <i>/src/test/resources/</i> directory for it to be analysed by other test methods.
     * ZINC "in-vitro": One test method curates the dataset. After this is done, the curated datasets needs to be placed in the
-      <i>src\test\resources</i> directory for it to be analysed by other test methods.
-    * ZINC "biogenic": The ZINC "biogenic" dataset needs to be placed in the <i>src\test\resources</i> directory to be 
+      <i>/src/test/resources/</i> directory for it to be analysed by other test methods.
+    * ZINC "biogenic": The ZINC "biogenic" dataset needs to be placed in the <i>/src/test/resources/</i> directory to be 
       used for the curation of the other datasets.
-* Manually curated review of bacterial natural products sugar moieties: 
-* ChEMBL:
-* DrugBank: 
+* **Manually curated review of bacterial natural products sugar moieties**: Two of the test methods do a substructure search 
+  in COCONUT for sugar moieties reported in bacterial natural products, manually curated by 
+  [Elshahawi et al.](https://doi.org/10.1039/C4CS00426D). This dataset is already supplied in this repository in the 
+  <i>/src/test/resources/</i> directory. 
+* **ChEMBL**: The ChEMBL 28 database is curated in one test method and analysed for glycosidic moieties in another. To run the
+  curation test, the dataset has to be placed in the <i>/src/test/resources/</i> directory as an SDF. After curation, the 
+  curated dataset has to be placed in the same directory.
+* **DrugBank**: The DrugBank "all structures" database is curated in one test method and analysed for glycosidic moieties in another. To run the
+  curation test, the dataset has to be placed in the <i>/src/test/resources/</i> directory as an SDF. After curation, the
+  curated dataset has to be placed in the same directory.
 
 ## Dependencies
 * Java Development Kit (JDK) version 11
