@@ -65,7 +65,7 @@ also ease the installation of required libraries, like the open-source cheminfor
 * **ChEMBL**: The ChEMBL 28 database is curated in one test method and analysed for glycosidic moieties in another. To run the
   curation test, the dataset has to be placed in the <i>/src/test/resources/</i> directory as an SDF. After curation, the 
   curated dataset has to be placed in the same directory.
-* **DrugBank**: The DrugBank "all structures" database is curated in one test method and analysed for glycosidic moieties in another. To run the
+* **DrugBank**: The DrugBank "all structures" dataset is curated in one test method and analysed for glycosidic moieties in another. To run the
   curation test, the dataset has to be placed in the <i>/src/test/resources/</i> directory as an SDF. After curation, the
   curated dataset has to be placed in the same directory.
 

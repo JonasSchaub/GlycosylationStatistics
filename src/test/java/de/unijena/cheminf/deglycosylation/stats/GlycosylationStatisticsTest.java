@@ -27,8 +27,7 @@ package de.unijena.cheminf.deglycosylation.stats;
 /**
  * TODO:
  * - general clean-up
- * - write doc (and readme)
- * - think about which datasets to include in the repository
+ * - write doc
  */
 
 import com.mongodb.MongoClientSettings;
@@ -92,7 +91,7 @@ import java.util.logging.SimpleFormatter;
  * on the platform. See credentials for making the connection in the private static final constants.
  * Also, most of the resource files (different data sets) are not included in the repository.
  * Results obtained with these analyses are published in <a href="https://doi.org/10.3390/biom11040486"
- *  * >"Description and Analysis of Glycosidic Residues in the Largest Open Natural Products Database (Schaub et al. 2021)"</a>
+ * >"Description and Analysis of Glycosidic Residues in the Largest Open Natural Products Database (Schaub et al. 2021)"</a>
  *
  * @author Jonas Schaub
  * @version 1.0.0.0
@@ -110,7 +109,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     private static final int PORT = 27017;
 
     /**
-     * Name of the MongoDB database, this version has 401,624 unique NPs
+     * Name of the MongoDB database to access; this COCONUT version contains 401,624 unique natural products
      */
     private static final String DATABASE_NAME = "COCONUT2020november03";
 
@@ -125,7 +124,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     private static final String SDF_NAME = "COCONUT_DB_november_18.sdf";
 
     /**
-     * Name of the output folder
+     * Name of the output folder for this test class
      */
     private static final String OUTPUT_FOLDER_NAME = "GlycosylationStatisticsTest_Output";
 
@@ -161,7 +160,8 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     /**
      * This test method visualises deglycosylation results of all sugar-containing molecules in COCONUT. For each of these
      * molecules, an image file depicting the original structure and one depicting the deglycosylated molecule (aglycon)
-     * are created in the respective output directory. To run this test, remove the JUnit @Ignore tag that is set because
+     * are created in the respective output directory (./GlycosylationStatisticsTest_Output/coconut_deglycosylation_visualization_test/).
+     * To run this test, remove the JUnit @Ignore tag that is set because
      * this test creates many files. Test is ignored, if no connection to MongoDB can be made.
      *
      * @throws Exception if anything goes wrong
@@ -233,7 +233,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     /**
      * This test method does some basic glycosylation statistics of COCONUT. It calculates: How many molecules have sugars,
      * circular sugars, linear sugars, both, and how many molecules are basically sugars. All statistics are printed to
-     * console and also compiled in an output file.
+     * console and also compiled in an output file created in the directory ./GlycosylationStatisticsTest_Output/coconut_stats_basics_test/.
      * Test is ignored, if no connection to MongoDB can be made.
      *
      * @throws Exception if anything goes wrong
@@ -367,7 +367,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
      * circular sugars (no terminal circular ones), terminal and non-terminal circular sugars, circular sugars with
      * glycosidic bonds, terminal circular sugars with glycosidic bonds, non-terminal circular sugars with glycosidic
      * bonds, both, spiro sugars, and how many molecules qualify for the SRU glycosidic bond exemption. All statistics
-     * are printed to console and also compiled in an output file.
+     * are printed to console and also compiled in an output file created in the directory ./GlycosylationStatisticsTest_Output/coconut_stats_circular_sugars_test.
      * Test is ignored, if no connection to MongoDB can be made.
      *
      * @throws Exception if anything goes wrong
@@ -614,15 +614,13 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         Assert.assertTrue(tmpHasBoth >= 0);
     }
 
-    //TODO: Carry on writing doc here!
     /**
      * This test method does some glycosylation statistics focused on linear sugars of COCONUT. It calculates:
-     * How many molecules have circular sugars, only circular sugars (no linear ones), terminal circular sugars,
-     * only terminal circular sugars (no non-terminal circular ones), non-terminal circular sugars, only non-terminal
-     * circular sugars (no terminal circular ones), terminal and non-terminal circular sugars, circular sugars with
-     * glycosidic bonds, terminal circular sugars with glycosidic bonds, non-terminal circular sugars with glycosidic
-     * bonds, both, spiro sugars, and how many molecules qualify for the SRU glycosidic bond exemption. All statistics
-     * are printed to console and also compiled in an output file.
+     * How many molecules have linear sugars, only linear sugars (no circular ones), terminal linear sugars,
+     * only terminal linear sugars (no non-terminal linear ones), non-terminal linear sugars, only non-terminal
+     * linear sugars (no terminal linear ones), terminal and non-terminal linear sugars, and linear sugars in rings.
+     * All statistics are printed to console and also compiled in an output file created in the directory
+     * ./GlycosylationStatisticsTest_Output/coconut_stats_linear_sugars_test.
      * Test is ignored, if no connection to MongoDB can be made.
      *
      * @throws Exception if anything goes wrong
@@ -742,7 +740,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             } catch (Exception anException) {
                 GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                 tmpExceptionsCounter++;
-                //continue;
             }
         }
         System.out.println();
@@ -795,8 +792,14 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     }
 
     /**
-     * TODO
-     * Consistency tested and approved
+     * This test method does some glycosylation statistics focused on circular sugar moieties detected in COCONUT.
+     * It calculates: How many circular sugar moieties, terminal circular sugar moieties, non-terminal circular sugar
+     * moieties, circular sugar moieties with glycosidic bonds, and terminal/non-terminal circular sugar moieties with
+     * glycosidic bonds can be detected in COCONUT. Also, the numbers of detected furanoses, pyranoses, and heptoses
+     * are reported and compiled in a CSV file.
+     * All statistics are printed to console and also compiled in an output file created in the directory
+     * ./GlycosylationStatisticsTest_Output/coconut_stats_circular_sugar_moieties_test.
+     * Test is ignored, if no connection to MongoDB can be made.
      *
      * @throws Exception if anything goes wrong
      */
@@ -904,7 +907,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             } catch (Exception anException) {
                 GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                 tmpExceptionsCounter++;
-                //continue;
             }
         }
         System.out.println();
@@ -947,13 +949,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             tmpCSVWriter.println(i + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
             tmpTotalOfCircularSugars += tmpFrequency;
         }
-        /* //Not occurring ratios are missing in the printout:
-        for (int i : tmpFrequenciesOfSizesOfCircularSugarMoietiesMap.keySet()) {
-            System.out.println(i + ":" + tmpFrequenciesOfSizesOfCircularSugarMoietiesMap.get(i));
-            tmpOutputWriter.println(i + ":" + tmpFrequenciesOfSizesOfCircularSugarMoietiesMap.get(i));
-            tmpCSVWriter.println(i + ":" + tmpFrequenciesOfSizesOfCircularSugarMoietiesMap.get(i));
-            tmpTotalOfCircularSugars += tmpFrequenciesOfSizesOfCircularSugarMoietiesMap.get(i);
-        } */
         tmpOutputWriter.flush();
         tmpCSVWriter.flush();
         tmpCursor.close();
@@ -965,8 +960,13 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     }
 
     /**
-     * TODO
-     * Consistency tested and approved
+     * This test method does some glycosylation statistics focused on linear sugar moieties detected in COCONUT.
+     * It calculates: How many linear sugar moieties, terminal linear sugar moieties, and non-terminal linear sugar
+     * moieties can be detected in COCONUT. Also, the numbers of detected tetroses, pentoses, hexoses and heptoses
+     * are reported and compiled in a CSV file.
+     * All statistics are printed to console and also compiled in an output file created in the directory
+     * ./GlycosylationStatisticsTest_Output/coconut_stats_linear_sugar_moieties_test.
+     * Test is ignored, if no connection to MongoDB can be made.
      *
      * @throws Exception if anything goes wrong
      */
@@ -1075,7 +1075,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             } catch (Exception anException) {
                 GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                 tmpExceptionsCounter++;
-                //continue;
             }
         }
         System.out.println();
@@ -1112,13 +1111,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             tmpCSVheavyAtomCountWriter.println(i + ":" + tmpFrequency);
             tmpTotalOfLinearSugars1 += tmpFrequency;
         }
-        /* //Not occurring ratios are missing in the printout:
-        for (int i : tmpFrequenciesOfHeavyAtomCountsOfLinearSugarMoietiesMap.keySet()) {
-            System.out.println(i + ":" + tmpFrequenciesOfHeavyAtomCountsOfLinearSugarMoietiesMap.get(i));
-            tmpOutputWriter.println(i + ":" + tmpFrequenciesOfHeavyAtomCountsOfLinearSugarMoietiesMap.get(i));
-            tmpCSVheavyAtomCountWriter.println(i + ":" + tmpFrequenciesOfHeavyAtomCountsOfLinearSugarMoietiesMap.get(i));
-            tmpTotalOfLinearSugars1 += tmpFrequenciesOfHeavyAtomCountsOfLinearSugarMoietiesMap.get(i);
-        } */
         System.out.println();
         tmpOutputWriter.println();
         System.out.println("Size (= carbon atom count) frequency distribution of linear sugars (note set min and max sizes): ");
@@ -1137,13 +1129,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             tmpCSVcarbonAtomCountWriter.println(i + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
             tmpTotalOfLinearSugars2 += tmpFrequency;
         }
-        /* //Not occurring ratios are missing in the printout:
-        for (int i : tmpFrequenciesOfCarbonAtomCountsOfLinearSugarMoietiesMap.keySet()) {
-            System.out.println(i + ":" + tmpFrequenciesOfCarbonAtomCountsOfLinearSugarMoietiesMap.get(i));
-            tmpOutputWriter.println(i + ":" + tmpFrequenciesOfCarbonAtomCountsOfLinearSugarMoietiesMap.get(i));
-            tmpCSVcarbonAtomCountWriter.println(i + ":" + tmpFrequenciesOfCarbonAtomCountsOfLinearSugarMoietiesMap.get(i));
-            tmpTotalOfLinearSugars2 += tmpFrequenciesOfCarbonAtomCountsOfLinearSugarMoietiesMap.get(i);
-        } */
         tmpOutputWriter.flush();
         tmpCSVheavyAtomCountWriter.flush();
         tmpCSVcarbonAtomCountWriter.flush();
@@ -1158,8 +1143,20 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     }
 
     /**
-     * TODO
+     * This test method does some glycosylation statistics focused on linear sugar moieties that are ring substructures
+     * detected in COCONUT.
+     * It calculates how many linear sugar moieties that are substructures of cycles can be detected in COCONUT.
+     * Also, their size distribution is reported and compiled in a CSV file. Additionally, images of every atom with such
+     * cyclic linear sugar moieties are created in the output directory where the moieties are highlighted.
+     * All statistics are printed to console and also compiled in an output file created in the directory
+     * ./GlycosylationStatisticsTest_Output/coconut_stats_linear_sugar_moieties_in_rings_test.
+     * To run this test, remove the JUnit @Ignore tag that is set because
+     * this test creates many files.
+     * Test is ignored, if no connection to MongoDB can be made.
+     *
+     * @throws Exception if anything goes wrong
      */
+    @Ignore
     @Test
     public void coconutStatsLinearSugarMoietiesInRingsTest() throws Exception {
         MongoCursor<Document> tmpCursor = null;
@@ -1180,7 +1177,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
-        //DepictionGenerator tmpDepictionGenerator = new DepictionGenerator();
+        DepictionGenerator tmpDepictionGenerator = new DepictionGenerator();
         Document tmpCurrentDoc;
         String tmpID;
         String tmpSmilesCode;
@@ -1209,15 +1206,13 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                     int tmpListSizeWithCandidatesInCycles = tmpLinearCandidatesIncludingCycles.size();
                     tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(false);
                     List<IAtomContainer> tmpLinearCandidatesExcludingCycles = tmpSugarRemovalUtil.getLinearSugarCandidates(tmpMolecule);
-                    //so far not needed here
-                    //tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(true);
                     int tmpListSizeWithoutCandidatesInCycles = tmpLinearCandidatesExcludingCycles.size();
                     int tmpNumberOfLinearSugarsInCycles = tmpListSizeWithCandidatesInCycles - tmpListSizeWithoutCandidatesInCycles;
                     Assert.assertTrue(tmpNumberOfLinearSugarsInCycles >= 0);
-                    //this will be the list of candidates that only get detected if cyclic atoms are included
                     if (tmpNumberOfLinearSugarsInCycles > 0) {
                         tmpLinearSugarMoietiesInRingsCounter += tmpNumberOfLinearSugarsInCycles;
-                        //List<IAtomContainer> tmpLinearCandidatesActuallyInRings = new ArrayList<>(tmpNumberOfLinearSugarsInCycles * 2);
+                        //this will be the list of candidates that only get detected if cyclic atoms are included
+                        List<IAtomContainer> tmpLinearCandidatesActuallyInRings = new ArrayList<>(tmpNumberOfLinearSugarsInCycles * 2);
                         int[][] tmpAdjList = GraphUtil.toAdjList(tmpMolecule);
                         RingSearch tmpRingSearch = new RingSearch(tmpMolecule, tmpAdjList);
                         for (IAtomContainer tmpCandidate : tmpLinearCandidatesIncludingCycles) {
@@ -1236,45 +1231,18 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                                         Integer tmpCurrentCount = tmpFrequenciesOfCarbonAtomCountsOfLinearSugarMoietiesMap.get(tmpCarbonCount);
                                         tmpFrequenciesOfCarbonAtomCountsOfLinearSugarMoietiesMap.put(tmpCarbonCount, tmpCurrentCount + 1);
                                     }
-                                    //tmpLinearCandidatesActuallyInRings.add(tmpCandidate);
-                                    //move on with the next candidate
+                                    tmpLinearCandidatesActuallyInRings.add(tmpCandidate);
+                                    //move on with the next candidate, i.e. break the loop over the atoms in this candidate
                                     break;
                                 }
                             }
                         }
-                        //<editor-fold desc="TODO look into this again">
-                        /*tmpDepictionGenerator.withHighlight(tmpLinearCandidatesActuallyInRings, Color.BLUE)
+                        tmpDepictionGenerator.withHighlight(tmpLinearCandidatesActuallyInRings, Color.BLUE)
                                 .withSize(2000, 2000)
                                 .withFillToFit()
                                 .depict(tmpMolecule)
-                                .writeTo(tmpOutputFolderPath + File.separator + tmpID + ".png");*/
-                        //System.out.println(tmpLinearCandidatesActuallyInRings.size());
-                        /*for (int i = 0; i < tmpLinearCandidatesActuallyInRings.size(); i++) {
-                            IAtomContainer tmpCandidate = tmpLinearCandidatesActuallyInRings.get(i);
-                            int tmpCarbonAtomCountTotal = 0;
-                            int tmpCarbonAtomCountInRing = 0;
-                            for (IAtom tmpAtom : tmpCandidate.atoms()) {
-                                boolean tmpIsCarbon = tmpAtom.getSymbol().equals("C");
-                                boolean tmpIsCyclic = tmpRingSearch.cyclic(tmpAtom);
-                                if (tmpIsCarbon) {
-                                    tmpCarbonAtomCountTotal++;
-                                    if (tmpIsCyclic) {
-                                        tmpCarbonAtomCountInRing++;
-                                    }
-                                }
-                            }
-                            int tmpExocyclicCarbonAtomCount = tmpCarbonAtomCountTotal - tmpCarbonAtomCountInRing;
-                            if (tmpExocyclicCarbonAtomCount < tmpSugarRemovalUtil.getLinearSugarCandidateMinSizeSetting()) {
-                                tmpLinearCandidatesActuallyInRings.remove(i);
-                                i = i - 1;
-                            }
-                        }
-                        //System.out.println(tmpLinearCandidatesActuallyInRings.size());
-                        //System.out.println();*/
-                        //Assert.assertTrue(tmpLinearCandidatesActuallyInRings.size() == tmpNumberOfLinearSugarsInCycles);
-                        //</editor-fold>
+                                .writeTo(tmpOutputFolderPath + File.separator + tmpID + ".png");
                     }
-
                     //leaving default further!
                     tmpSugarRemovalUtil.setRemoveOnlyTerminalSugarsSetting(false);
                     IAtomContainer tmpNewClone = tmpMolecule.clone();
@@ -1301,7 +1269,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             } catch (Exception anException) {
                 GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                 tmpExceptionsCounter++;
-                //continue;
             }
         }
         System.out.println();
@@ -1345,8 +1312,12 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     }
 
     /**
-     * TODO
-     * Consistency tested and approved
+     * This test method does some glycosylation statistics focused on molecules that are sugar monomers or polymers in
+     * COCONUT. It calculates how many molecules are basically sugars (i.e. consist only of sugar units) and what
+     * portions of these are circular or linear sugar polymers or monomers. All statistics
+     * are printed to console and also compiled in an output file created in the directory
+     * ./GlycosylationStatisticsTest_Output/coconut_stats_sugar_molecules_test.
+     * Test is ignored, if no connection to MongoDB can be made.
      *
      * @throws Exception if anything goes wrong
      */
@@ -1437,7 +1408,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             } catch (Exception anException) {
                 GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                 tmpExceptionsCounter++;
-                //continue;
             }
         }
         System.out.println();
@@ -1479,8 +1449,12 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
 
 
     /**
-     * TODO
-     * Consistency tested and approved
+     * This test method does some glycosylation statistics focused on the general distribution of sugar moieties detected
+     * in COCONUT. It calculates how many molecules have how many (circular/linear) sugar moieties, respectively.
+     * All statistics are printed to console and also compiled in an output file created in the directory
+     * ./GlycosylationStatisticsTest_Output/coconut_stats_moiety_frequencies_test. Also, CSV files for the sugar moiety
+     * distributions are created.
+     * Test is ignored, if no connection to MongoDB can be made.
      *
      * @throws Exception if anything goes wrong
      */
@@ -1596,7 +1570,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             } catch (Exception anException) {
                 GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                 tmpExceptionsCounter++;
-                //continue;
             }
         }
         System.out.println();
@@ -1622,13 +1595,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             tmpCSVmoietyNrFreqWriter.println(i + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
             tmpTotalOfSugarContainingMolecules += tmpFrequency;
         }
-        /* //Not occurring ratios are missing in the printout:
-        for (int i : tmpHowManyMoleculesHaveHowManySugarMoietiesMap.keySet()) {
-            System.out.println(i + ":" + tmpHowManyMoleculesHaveHowManySugarMoietiesMap.get(i));
-            tmpOutputWriter.println(i + ":" + tmpHowManyMoleculesHaveHowManySugarMoietiesMap.get(i));
-            tmpCSVmoietyNrFreqWriter.println(i + ":" + tmpHowManyMoleculesHaveHowManySugarMoietiesMap.get(i));
-            tmpTotalOfSugarContainingMolecules += tmpHowManyMoleculesHaveHowManySugarMoietiesMap.get(i);
-        } */
         System.out.println();
         tmpOutputWriter.println();
         System.out.println("How many molecules have how many circular sugars (out of these that have any): ");
@@ -1646,13 +1612,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             tmpCSVcircMoietyNrFreqWriter.println(i + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
             tmpTotalOfCircularSugarContainingMolecules += tmpFrequency;
         }
-        /* //Not occurring ratios are missing in the printout:
-        for (int i : tmpHowManyMoleculesHaveHowManyCircularSugarMoietiesMap.keySet()) {
-            System.out.println(i + ":" + tmpHowManyMoleculesHaveHowManyCircularSugarMoietiesMap.get(i));
-            tmpOutputWriter.println(i + ":" + tmpHowManyMoleculesHaveHowManyCircularSugarMoietiesMap.get(i));
-            tmpCSVcircMoietyNrFreqWriter.println(i + ":" + tmpHowManyMoleculesHaveHowManyCircularSugarMoietiesMap.get(i));
-            tmpTotalOfCircularSugarContainingMolecules += tmpHowManyMoleculesHaveHowManyCircularSugarMoietiesMap.get(i);
-        } */
         System.out.println();
         tmpOutputWriter.println();
         System.out.println("How many molecules have how many circular sugars attached via a glycosidic bond (out of these that have any): ");
@@ -1670,13 +1629,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             tmpCSVcircMoietyGlyBondNrFreqWriter.println(i + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
             tmpTotalOfCircularSugarWithGlycosidicBondContainingMolecules += tmpFrequency;
         }
-        /* //Not occurring ratios are missing in the printout:
-        for (int i : tmpHowManyMoleculesHaveHowManyCircularSugarMoietiesWithGlycosidicBondMap.keySet()) {
-            System.out.println(i + ":" + tmpHowManyMoleculesHaveHowManyCircularSugarMoietiesWithGlycosidicBondMap.get(i));
-            tmpOutputWriter.println(i + ":" + tmpHowManyMoleculesHaveHowManyCircularSugarMoietiesWithGlycosidicBondMap.get(i));
-            tmpCSVcircMoietyGlyBondNrFreqWriter.println(i + ":" + tmpHowManyMoleculesHaveHowManyCircularSugarMoietiesWithGlycosidicBondMap.get(i));
-            tmpTotalOfCircularSugarWithGlycosidicBondContainingMolecules += tmpHowManyMoleculesHaveHowManyCircularSugarMoietiesWithGlycosidicBondMap.get(i);
-        } */
         System.out.println();
         tmpOutputWriter.println();
         System.out.println("How many molecules have how many linear sugars (out of these that have any): ");
@@ -1694,13 +1646,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             tmpCSVlinMoietyNrFreqWriter.println(i + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
             tmpTotalOfLinearSugarContainingMolecules += tmpFrequency;
         }
-        /* //Not occurring ratios are missing in the printout:
-        for (int i : tmpHowManyMoleculesHaveHowManyLinearSugarMoietiesMap.keySet()) {
-            System.out.println(i + ":" + tmpHowManyMoleculesHaveHowManyLinearSugarMoietiesMap.get(i));
-            tmpOutputWriter.println(i + ":" + tmpHowManyMoleculesHaveHowManyLinearSugarMoietiesMap.get(i));
-            tmpCSVlinMoietyNrFreqWriter.println(i + ":" + tmpHowManyMoleculesHaveHowManyLinearSugarMoietiesMap.get(i));
-            tmpTotalOfLinearSugarContainingMolecules += tmpHowManyMoleculesHaveHowManyLinearSugarMoietiesMap.get(i);
-        } */
         tmpOutputWriter.flush();
         tmpCSVmoietyNrFreqWriter.flush();
         tmpCSVcircMoietyNrFreqWriter.flush();
@@ -1718,12 +1663,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         Assert.assertEquals(tmpHasLinearSugarsCounter, tmpTotalOfLinearSugarContainingMolecules);
     }
 
-    /**
-     * TODO
-     * Consistency tested and approved
-     *
-     * @throws Exception if anything goes wrong
-     */
+    //TODO: Write doc from here on
     @Test
     public void coconutStatsExocyclicOxygensTest() throws Exception {
         MongoCursor<Document> tmpCursor = null;
@@ -1833,7 +1773,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             } catch (Exception anException) {
                 GlycosylationStatisticsTest.LOGGER.log(Level.SEVERE, anException.toString() + " ID: " + tmpID, anException);
                 tmpExceptionsCounter++;
-                //continue;
             }
         }
         System.out.println();
@@ -1860,14 +1799,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             tmpOutputWriter.println(tmpRatio + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
             tmpCSVExoCycOxRatioFreqWriter.println(tmpRatio + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
         }
-        /* //Not occurring ratios are missing in the printout:
-        List<String> tmpSortedKeySet = new ArrayList<>(tmpFrequenciesOfAttachedExocyclicOxygenAtomsRatiosMap.keySet());
-        Collections.sort(tmpSortedKeySet);
-        for (String i : tmpSortedKeySet) {
-            System.out.println(i + ":" + tmpFrequenciesOfAttachedExocyclicOxygenAtomsRatiosMap.get(i));
-            tmpOutputWriter.println(i + ":" + tmpFrequenciesOfAttachedExocyclicOxygenAtomsRatiosMap.get(i));
-            tmpCSVExoCycOxRatioFreqWriter.println(i + ":" + tmpFrequenciesOfAttachedExocyclicOxygenAtomsRatiosMap.get(i));
-        } */
         System.out.println();
         tmpOutputWriter.println();
         System.out.println("Frequency distribution of exocyclic oxygen atom counts of 5-membered circular sugars: ");
@@ -1883,12 +1814,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             tmpOutputWriter.println(i + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
             tmpCSVExoCycOxFuranosesFreqWriter.println(i + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
         }
-        /* //Not occurring ratios are missing in the printout:
-        for (int i : tmpFrequenciesOfNumbersOfAttachedExocyclicOxygenAtomsOn5MemberedRingsMap.keySet()) {
-            System.out.println(i + ":" + tmpFrequenciesOfNumbersOfAttachedExocyclicOxygenAtomsOn5MemberedRingsMap.get(i));
-            tmpOutputWriter.println(i + ":" + tmpFrequenciesOfNumbersOfAttachedExocyclicOxygenAtomsOn5MemberedRingsMap.get(i));
-            tmpCSVExoCycOxFuranosesFreqWriter.println(i + ":" + tmpFrequenciesOfNumbersOfAttachedExocyclicOxygenAtomsOn5MemberedRingsMap.get(i));
-        }*/
         System.out.println();
         tmpOutputWriter.println();
         System.out.println("Frequency distribution of exocyclic oxygen atom counts of 6-membered circular sugars: ");
@@ -1904,12 +1829,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             tmpOutputWriter.println(i + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
             tmpCSVExoCycOxPyranosesFreqWriter.println(i + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
         }
-        /* //Not occurring ratios are missing in the printout:
-        for (int i : tmpFrequenciesOfNumbersOfAttachedExocyclicOxygenAtomsOn6MemberedRingsMap.keySet()) {
-            System.out.println(i + ":" + tmpFrequenciesOfNumbersOfAttachedExocyclicOxygenAtomsOn6MemberedRingsMap.get(i));
-            tmpOutputWriter.println(i + ":" + tmpFrequenciesOfNumbersOfAttachedExocyclicOxygenAtomsOn6MemberedRingsMap.get(i));
-            tmpCSVExoCycOxPyranosesFreqWriter.println(i + ":" + tmpFrequenciesOfNumbersOfAttachedExocyclicOxygenAtomsOn6MemberedRingsMap.get(i));
-        } */
         System.out.println();
         tmpOutputWriter.println();
         System.out.println("Frequency distribution of exocyclic oxygen atom counts of 7-membered circular sugars: ");
@@ -1925,12 +1844,6 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             tmpOutputWriter.println(i + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
             tmpCSVExoCycOxHeptosesFreqWriter.println(i + GlycosylationStatisticsTest.OUTPUT_FILE_SEPARATOR + tmpFrequency);
         }
-        /* //Not occurring ratios are missing in the printout:
-        for (int i : tmpFrequenciesOfNumbersOfAttachedExocyclicOxygenAtomsOn7MemberedRingsMap.keySet()) {
-            System.out.println(i + ":" + tmpFrequenciesOfNumbersOfAttachedExocyclicOxygenAtomsOn7MemberedRingsMap.get(i));
-            tmpOutputWriter.println(i + ":" + tmpFrequenciesOfNumbersOfAttachedExocyclicOxygenAtomsOn7MemberedRingsMap.get(i));
-            tmpCSVExoCycOxHeptosesFreqWriter.println(i + ":" + tmpFrequenciesOfNumbersOfAttachedExocyclicOxygenAtomsOn7MemberedRingsMap.get(i));
-        } */
         System.out.println();
         tmpOutputWriter.println();
         System.out.println("Number of circular sugar moieties that had an unexpected ring size (should be zero!): " + tmpUnexpectedRingSizeCounter);
