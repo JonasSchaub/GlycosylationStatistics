@@ -87,10 +87,10 @@ also ease the installation of required libraries, like the open-source cheminfor
 
 ## References and useful links
 **Glycosylation statistics of COCONUT publication**
-* [Schaub, J.; Zielesny, A.; Steinbeck, C.; Sorokina, M. Description and Analysis of Glycosidic Residues in the Largest Open Natural Products Database. Biomolecules 2021, 11, 486. https://doi.org/10.3390/biom11040486](https://doi.org/10.3390/biom11040486)
+* [Schaub, J., Zielesny, A., Steinbeck, C., Sorokina, M. Description and Analysis of Glycosidic Residues in the Largest Open Natural Products Database. Biomolecules 2021, 11, 486. https://doi.org/10.3390/biom11040486](https://doi.org/10.3390/biom11040486)
 
 **Sugar Removal Utility**
-* [Schaub, J., Zielesny, A., Steinbeck, C. et al. Too sweet: cheminformatics for deglycosylation in natural products. J Cheminform 12, 67 (2020). https://doi.org/10.1186/s13321-020-00467-y](https://doi.org/10.1186/s13321-020-00467-y)
+* [Schaub, J., Zielesny, A., Steinbeck, C., Sorokina, M. Too sweet: cheminformatics for deglycosylation in natural products. J Cheminform 12, 67 (2020). https://doi.org/10.1186/s13321-020-00467-y](https://doi.org/10.1186/s13321-020-00467-y)
 * [SRU Source code](https://github.com/JonasSchaub/SugarRemoval)
 * [Sugar Removal Web Application](https://sugar.naturalproducts.net)
 * [Source Code of Web Application](https://github.com/mSorok/SugarRemovalWeb)
