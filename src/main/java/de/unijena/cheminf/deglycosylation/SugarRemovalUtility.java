@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2020 Jonas Schaub, Achim Zielesny, Christoph Steinbeck, Maria Sorokina
+ * Copyright (c) 2021 Jonas Schaub, Achim Zielesny, Christoph Steinbeck, Maria Sorokina
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@ package de.unijena.cheminf.deglycosylation;
  * IMPORTANT NOTE: This is a copy of
  * https://github.com/JonasSchaub/SugarRemoval/blob/master/src/main/java/de/unijena/cheminf/deglycosylation/SugarRemovalUtility.java
  * Therefore, do not make any changes here but in the original repository!
- * Last copied on January 29th 2021
+ * Last copied on December 14th 2021
  */
 
 import org.openscience.cdk.AtomContainer;
@@ -74,7 +74,7 @@ import java.util.logging.Logger;
  * It offers various functions to detect and remove sugar moieties with different options.
  *
  * @author Jonas Schaub, Maria Sorokina
- * @version 1.2.1.2
+ * @version 1.3.0.0
  */
 public class SugarRemovalUtility {
     //<editor-fold desc="Enum PreservationModeOption">
@@ -473,8 +473,8 @@ public class SugarRemovalUtility {
             String tmpSmiles = null;
             try {
                 tmpSmiles = tmpSmilesGen.create(tmpLinearSugar);
-            } catch (CDKException aCDKException) {
-                SugarRemovalUtility.LOGGER.log(Level.WARNING, aCDKException.toString(), aCDKException);
+            } catch (CDKException | NullPointerException anException) {
+                SugarRemovalUtility.LOGGER.log(Level.WARNING, anException.toString(), anException);
             }
             if (!Objects.isNull(tmpSmiles)) {
                 try {
@@ -537,8 +537,8 @@ public class SugarRemovalUtility {
             String tmpSmiles = null;
             try {
                 tmpSmiles = tmpSmilesGen.create(tmpRingSugar);
-            } catch (CDKException aCDKException) {
-                SugarRemovalUtility.LOGGER.log(Level.WARNING, aCDKException.toString(), aCDKException);
+            } catch (CDKException | NullPointerException anException) {
+                SugarRemovalUtility.LOGGER.log(Level.WARNING, anException.toString(), anException);
             }
             if (!Objects.isNull(tmpSmiles)) {
                 try {
@@ -3034,7 +3034,7 @@ public class SugarRemovalUtility {
             }
             try {
                 System.out.println(tmpSmiGen.create(tmpCandidate));
-            } catch (CDKException anException) {
+            } catch (CDKException | NullPointerException anException) {
                 SugarRemovalUtility.LOGGER.log(Level.SEVERE, anException.toString(), anException);
                 System.out.println("[molecule could not be parsed to SMILES code]");
             }
