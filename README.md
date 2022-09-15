@@ -70,17 +70,17 @@ also ease the installation of required libraries, like the open-source cheminfor
   curated dataset has to be placed in the same directory.
 
 ## Dependencies
-* Java Development Kit (JDK) version 11
+* Java Development Kit (JDK) version 17
     * [AdoptOpenJDK](https://adoptopenjdk.net) (as one possible source of the JDK)
-* Chemistry Development Kit (CDK) version 2.6
+* Chemistry Development Kit (CDK) version 2.8
     * [Chemistry Development Kit on GitHub](https://cdk.github.io/)
 * Apache Maven version 4
     * [Apache Maven](http://maven.apache.org)
-* JUnit version 4.13.1
+* JUnit version 4.13.2
     * [JUnit 4](https://junit.org/junit4/)
 * Java MongoDB Driver version 3.11.1
     * [Java MongoDB Driver documentation](https://docs.mongodb.com/drivers/java/)
-* Python version 3.7.4
+* Python version 4.7.1
     * [Anaconda](https://www.anaconda.com) (as a recommended source for the python interpreter and many more)
 * RDKit: Open-Source Cheminformatics Software version 2020.03
     * [RDKit homepage](http://www.rdkit.org)

@@ -2,7 +2,7 @@
 <!--
   ~ MIT License
   ~
-  ~ Copyright (c) 2021 Jonas Schaub, Achim Zielesny, Christoph Steinbeck, Maria Sorokina
+  ~ Copyright (c) 2022 Jonas Schaub, Achim Zielesny, Christoph Steinbeck, Maria Sorokina
   ~
   ~ Permission is hereby granted, free of charge, to any person obtaining a copy
   ~ of this software and associated documentation files (the "Software"), to deal
@@ -32,14 +32,16 @@
     <groupId>de.unijena.cheminf</groupId>
     <artifactId>deglycosylation.stats</artifactId>
     <name>GlycosylationStatistics</name>
-    <version>1.0.1.0</version>
+    <version>1.0.2.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.build.source>11</project.build.source>
-        <project.build.target>1.11</project.build.target>
-        <java.version>1.11</java.version>
-        <cdk.version>2.6</cdk.version>
+        <project.build.source>17</project.build.source>
+        <project.build.target>17</project.build.target>
+        <java.version>17</java.version>
+        <cdk.version>2.8</cdk.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -76,14 +78,19 @@
             <version>${cdk.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.openscience.cdk</groupId>
+            <artifactId>cdk-smarts</artifactId>
+            <version>${cdk.version}</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.13.1</version>
+            <version>4.13.2</version>
         </dependency>
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
-            <version>3.11.3</version>
+            <version>4.7.1</version>
         </dependency>
     </dependencies>
 
@@ -92,12 +99,18 @@
     <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>3.10.1</version>
         <configuration>
-            <release>11</release>
+            <source>17</source>
+            <target>17</target>
         </configuration>
-    </plugin>
-    </plugins>
-    </build>
+        <!--
+       <configuration>
+           <release>1.17</release>
+       </configuration>
+       -->
+   </plugin>
+   </plugins>
+   </build>
 
 </project>

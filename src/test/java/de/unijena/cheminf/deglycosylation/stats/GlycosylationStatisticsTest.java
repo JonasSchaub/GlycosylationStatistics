@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2021 Jonas Schaub, Achim Zielesny, Christoph Steinbeck, Maria Sorokina
+ * Copyright (c) 2022 Jonas Schaub, Achim Zielesny, Christoph Steinbeck, Maria Sorokina
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,7 @@ import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.graph.GraphUtil;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.io.iterator.IteratingSDFReader;
 import org.openscience.cdk.isomorphism.DfPattern;
 import org.openscience.cdk.ringsearch.RingSearch;
@@ -88,7 +89,7 @@ import java.util.logging.SimpleFormatter;
  * >"Description and Analysis of Glycosidic Residues in the Largest Open Natural Products Database (Schaub et al. 2021)"</a>
  *
  * @author Jonas Schaub
- * @version 1.0.0.0
+ * @version 1.0.2.0
  */
 public class GlycosylationStatisticsTest extends SugarRemovalUtility {
     //<editor-fold desc="Private static final constants">
@@ -147,6 +148,15 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
      * Logger of this class
      */
     private static final Logger LOGGER = Logger.getLogger(GlycosylationStatisticsTest.class.getName());
+
+    /**
+     * Sole constructor of this class. All settings are set to their default values (see public static constants or
+     * enquire via get/is methods). To change these settings, use the respective 'setXY()' methods.
+     *
+     */
+    public GlycosylationStatisticsTest() throws NullPointerException {
+        super(DefaultChemObjectBuilder.getInstance());
+    }
     //</editor-fold>
     //
     //<editor-fold desc="Test methods">
@@ -177,7 +187,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         //Prints output folder to console
         String tmpOutputFolderPath = this.initializeOutputFolderAndLogger(tmpSpecificOutputFolderName);
         //All settings in default
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         DepictionGenerator tmpDepictionGenerator = new DepictionGenerator();
@@ -248,7 +258,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         String tmpOutputFolderPath = this.initializeOutputFolderAndLogger(tmpSpecificOutputFolderName);
         PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
         //All settings in default
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         Document tmpCurrentDoc;
@@ -382,7 +392,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         String tmpOutputFolderPath = this.initializeOutputFolderAndLogger(tmpSpecificOutputFolderName);
         PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
         //All settings in default
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         Document tmpCurrentDoc;
@@ -635,7 +645,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         String tmpOutputFolderPath = this.initializeOutputFolderAndLogger(tmpSpecificOutputFolderName);
         PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
         //All settings in default
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         Document tmpCurrentDoc;
@@ -814,7 +824,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
         PrintWriter tmpCSVWriter = this.initializeOutputFile(tmpOutputFolderPath, "CircSugarsSizeFrequencies.csv");
         //All settings in default
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         Document tmpCurrentDoc;
@@ -982,7 +992,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         PrintWriter tmpCSVheavyAtomCountWriter = this.initializeOutputFile(tmpOutputFolderPath, "LinSugarsHeavyAtomCountFrequencies.csv");
         PrintWriter tmpCSVcarbonAtomCountWriter = this.initializeOutputFile(tmpOutputFolderPath, "LinSugarsCarbonAtomCountFrequencies.csv");
         //All settings in default
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         Document tmpCurrentDoc;
@@ -1168,7 +1178,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
         PrintWriter tmpCSVWriter = this.initializeOutputFile(tmpOutputFolderPath, "LinSugarsCarbonAtomCountFrequencies.csv");
         //All settings in default
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         DepictionGenerator tmpDepictionGenerator = new DepictionGenerator();
@@ -1331,7 +1341,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         String tmpOutputFolderPath = this.initializeOutputFolderAndLogger(tmpSpecificOutputFolderName);
         PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
         //All settings in default
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         Document tmpCurrentDoc;
@@ -1472,7 +1482,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         PrintWriter tmpCSVcircMoietyGlyBondNrFreqWriter = this.initializeOutputFile(tmpOutputFolderPath, "CircSugMoietyGlyBondNrFrequencies.csv");
         PrintWriter tmpCSVlinMoietyNrFreqWriter = this.initializeOutputFile(tmpOutputFolderPath, "LinSugMoietyNrFrequencies.csv");
         //All settings in default
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         Document tmpCurrentDoc;
@@ -1693,7 +1703,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         PrintWriter tmpCSVExoCycOxRatioFreqWriter = this.initializeOutputFile(tmpOutputFolderPath,
                 "ExoCycOxRatioFrequencies.csv");
         //All settings in default
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         NumberFormat tmpRatioOutputFormat = NumberFormat.getInstance(Locale.US);
@@ -1892,7 +1902,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         String tmpOutputFolderPath = this.initializeOutputFolderAndLogger(tmpSpecificOutputFolderName);
         PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
         //All settings in default
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         Document tmpCurrentDoc;
@@ -2027,7 +2037,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
         PrintWriter tmpCSVWriter = this.initializeOutputFile(tmpOutputFolderPath, "LinearSugarPatternFrequencies.csv");
         //All settings in default
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         //to also test their appearance
         tmpSugarRemovalUtil.setDetectLinearAcidicSugarsSetting(true);
         //Note: Here, additional molecules could be added to the list to also test them
@@ -2139,7 +2149,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 + "firstOrigin";
         tmpCSVmoietyFreqWriter.println(tmpCSVmoietyFreqFileHeader);
         tmpCSVmoietyFreqWriter.flush();
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Unique);
@@ -2293,7 +2303,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
                 + "firstOrigin";
         tmpCSVmoietyFreqWriter.println(tmpCSVmoietyFreqFileHeader);
         tmpCSVmoietyFreqWriter.flush();
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Unique);
@@ -2454,7 +2464,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         }
         System.out.println(tmpSDFile.getAbsolutePath());
         //All settings in default
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Unique);
@@ -2662,7 +2672,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
             Assume.assumeTrue(false);
         }
         System.out.println(tmpSDFile.getAbsolutePath());
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         //change setting to detect more of the sugar-like moieties
         tmpSugarRemovalUtil.setExocyclicOxygenAtomsToAtomsInRingRatioThresholdSetting(0.3);
         System.out.println("SRU exocyclic oxygen to atoms in ring ratio threshold set to "
@@ -2854,7 +2864,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         String tmpOutputFolderPath = this.initializeOutputFolderAndLogger(tmpSpecificOutputFolderName);
         PrintWriter tmpOutputWriter = this.initializeOutputFile(tmpOutputFolderPath, "Output.txt");
         //All settings in default
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         IteratingSDFReader tmpReader = new IteratingSDFReader(new FileInputStream(tmpSDFile), DefaultChemObjectBuilder.getInstance(), true);
         String tmpID;
@@ -2951,7 +2961,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         tmpOutputWriter.flush();
         tmpReader.close();
         tmpOutputWriter.close();
-        Assert.assertEquals(tmpMoleculesCounter, tmpHasNoSugarsCounter + tmpHasAnyTypeOfSugarsCounter);
+        Assert.assertEquals(tmpMoleculesCounter, tmpHasNoSugarsCounter + tmpHasAnyTypeOfSugarsCounter + tmpExceptionsCounter);
     }
 
     /**
@@ -3385,7 +3395,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         DepictionGenerator tmpDepictionGenerator = new DepictionGenerator();
         IAtomContainer tmpOriginalMolecule;
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setDetectLinearSugarsInRingsSetting(true);
         tmpOriginalMolecule = tmpSmiPar.parseSmiles(
                 "O=C[C@H](O)[C@@H](O)[C@H](O)[C@H](O)COS(=O)(=O)O");
@@ -3838,7 +3848,7 @@ public class GlycosylationStatisticsTest extends SugarRemovalUtility {
         FileReader tmpSmilesFileReader = new FileReader(tmpSmilesFile);
         BufferedReader tmpSmilesBufferedReader = new BufferedReader(tmpSmilesFileReader);
         //All settings in default
-        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility();
+        SugarRemovalUtility tmpSugarRemovalUtil = new SugarRemovalUtility(DefaultChemObjectBuilder.getInstance());
         tmpSugarRemovalUtil.setAddPropertyToSugarContainingMoleculesSetting(true);
         SmilesParser tmpSmiPar = new SmilesParser(DefaultChemObjectBuilder.getInstance());
         SmilesGenerator tmpSmiGen = new SmilesGenerator(SmiFlavor.Unique);
