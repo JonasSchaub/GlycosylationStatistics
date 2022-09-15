@@ -1,0 +1,44 @@
+cff-version: 1.2.0
+title: Glycosylation Statistics
+version: 1.0.2.0
+message: "If you use this software, please cite it as below and also cite the accompanying scientific publication referenced below."
+type: software
+authors:
+  - family-names: "Schaub"
+    given-names: "Jonas"
+    orcid: "https://orcid.org/0000-0003-1554-6666"
+  - family-names: "Zielesny"
+    given-names: "Achim"    
+    orcid: "https://orcid.org/0000-0003-0722-4229"
+  - family-names: "Steinbeck"
+    given-names: "Christoph"
+    orcid: "https://orcid.org/0000-0001-6966-0814"
+  - family-names: "Sorokina"
+    given-names: "Maria"
+    orcid: "https://orcid.org/0000-0001-9359-7149"
+doi: "10.5281/zenodo.7082447"
+date-released: 2022-09-15
+url: "https://github.com/JonasSchaub/GlycosylationStatistics"
+license: MIT
+references:
+  - authors:
+      - family-names: "Schaub"
+        given-names: "Jonas"
+        orcid: "https://orcid.org/0000-0003-1554-6666"
+      - family-names: "Zielesny"
+        given-names: "Achim"
+        orcid: "https://orcid.org/0000-0003-0722-4229"
+      - family-names: "Steinbeck"
+        given-names: "Christoph"
+        orcid: "https://orcid.org/0000-0001-6966-0814"
+      - family-names: "Sorokina"
+        given-names: "Maria"
+        orcid: "https://orcid.org/0000-0001-9359-7149"
+    doi: "10.3390/biom11040486"
+    issue: 4
+    journal: "Biomolecules"
+    scope: "Cite this paper if you want to reference the general concepts of the software."
+    title: "Description and Analysis of Glycosidic Residues in the Largest Open Natural Products Database"
+    type: article
+    volume: 11
+    year: 2021
