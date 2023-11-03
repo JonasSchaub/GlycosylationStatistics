@@ -1,3 +1,9 @@
+[![DOI](https://zenodo.org/badge/284081201.svg)](https://zenodo.org/doi/10.5281/zenodo.7081511)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub issues](https://img.shields.io/github/issues/JonasSchaub/SugarRemoval.svg)](https://GitHub.com/JonasSchaub/SugarRemoval/issues/)
+[![GitHub contributors](https://img.shields.io/github/contributors/JonasSchaub/SugarRemoval.svg)](https://GitHub.com/JonasSchaub/SugarRemoval/graphs/contributors/)
+[![GitHub release](https://img.shields.io/github/release/JonasSchaub/SugarRemoval.svg)](https://github.com/JonasSchaub/SugarRemoval/releases/)
+
 # Description and Analysis of Glycosidic Residues in the Largest Open Natural Products Database
 ##### Code for automated, systematic detection of sugar moieties in the COlleCtion of Open Natural prodUcTs (COCONUT) database
 
@@ -5,11 +11,22 @@
 This repository contains Java source code for automatically detecting and analysing glyosidic moieties <i>in silico</i> in 
 the largest open natural products database COCONUT, 
 as described in [Schaub, J.; Zielesny, A.; Steinbeck, C.; Sorokina, M. Description and Analysis of Glycosidic Residues in the Largest 
-Open Natural Products Database. Biomolecules 2021, 11, 486. https://doi.org/10.3390/biom11040486](https://doi.org/10.3390/biom11040486),
+Open Natural Products Database. Biomolecules 2021, 11, 486.](https://doi.org/10.3390/biom11040486),
 using the [Sugar Removal Utility](https://doi.org/10.1186/s13321-020-00467-y).
 <br>Additionally, similar analyses are done with datasets from the ZINC15 database, DrugBank, and ChEMBL.
 <br>Python scripts and Jupyter notebooks for the curation of some used datasets and analysing and visualising the results 
 are also supplied in this repository.
+<p>
+Please NOTE that the code in this repository is primarily supposed to show how the glycosylation statistics published
+in the article linked above were generated and to allow reproduction and executing of the same analyses for other
+datasets. It is not considered a software by itself. Hence, things like the publication of a Maven artifact for 
+straightforward installation are not given here.
+<br>
+
+The [Sugar Removal Utility](https://github.com/JonasSchaub/SugarRemoval), however, can be installed as a Maven artifact in
+a straightforward manner and used in your own scripts and workflows to analyse other datasets this way.
+
+</p>
 
 ## Contents
 ### Source code for glycosylation statistics analysis
@@ -18,11 +35,6 @@ In the directory <i>/src/test/java/de/unijena/cheminf/deglycosylation/stats/</i>
 a script-like fashion to do the various analyses. Using an IDE like e.g. IntelliJ is recommended. Please note that some 
 directories etc. will need to be adjusted and some datasets be put into the <i>/src/test/resources/</i> directory 
 (see below) to run the tests yourself.<p>
-
-The directory <i>/src/main/java/de/unijena/cheminf/deglycosylation/</i> contains the class <i>SugarRemovalUtility</i> which
-is used for the identification of sugar moieties in the analysed molecules. This version is only a copy and the full 
-SugarRemovalUtility sources and additional resources can be found in its own GitHub repository: 
-[https://github.com/JonasSchaub/SugarRemoval](https://github.com/JonasSchaub/SugarRemoval) <p>
 
 The directory <i>/Python_scripts_and_notebooks/</i> contains a python script for picking a diverse subset of a larger 
 datasets using the [RDKit MaxMin algorithm](http://www.rdkit.org/docs/GettingStartedInPython.html#picking-diverse-molecules-using-fingerprints).

@@ -92,6 +92,11 @@
             <artifactId>mongodb-driver-sync</artifactId>
             <version>4.7.1</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.jonasschaub</groupId>
+            <artifactId>sru</artifactId>
+            <version>1.4.0.0</version>
+        </dependency>
     </dependencies>
 
     <build>

@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 Jonas Schaub, Achim Zielesny, Christoph Steinbeck, Maria Sorokina
+ * Copyright (c) 2023 Jonas Schaub, Achim Zielesny, Christoph Steinbeck, Maria Sorokina
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,6 @@ import org.openscience.cdk.graph.ConnectivityChecker;
 import org.openscience.cdk.graph.GraphUtil;
 import org.openscience.cdk.interfaces.IAtom;
 import org.openscience.cdk.interfaces.IAtomContainer;
-import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.io.iterator.IteratingSDFReader;
 import org.openscience.cdk.isomorphism.DfPattern;
 import org.openscience.cdk.ringsearch.RingSearch;
@@ -80,13 +79,15 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 /**
- * This test class uses the <a href="https://doi.org/10.1186/s13321-020-00467-y"
- * >"Sugar Removal Utility (SRU)"</a> to detect glycosylation in various databases, mainly the <a href="https://doi.org/10.1186/s13321-020-00478-9"
- * >"COlleCtion of Open Natural prodUcTs (COCONUT)"</a>. It is imported via MongoDB. Therefore, MongoDB needs to be running
+ * This test class uses the
+ * <a href="https://doi.org/10.1186/s13321-020-00467-y">"Sugar Removal Utility (SRU)"</a>
+ * to detect glycosylation in various databases, mainly the
+ * <a href="https://doi.org/10.1186/s13321-020-00478-9">"COlleCtion of Open Natural prodUcTs (COCONUT)"</a>.
+ * It is imported via MongoDB. Therefore, MongoDB needs to be running
  * on the platform. See credentials for making the connection in the private static final constants.
  * Also, most of the resource files (different data sets) are not included in the repository.
- * Results obtained with these analyses are published in <a href="https://doi.org/10.3390/biom11040486"
- * >"Description and Analysis of Glycosidic Residues in the Largest Open Natural Products Database (Schaub et al. 2021)"</a>
+ * Results obtained with these analyses are published in
+ * <a href="https://doi.org/10.3390/biom11040486">"Description and Analysis of Glycosidic Residues in the Largest Open Natural Products Database (Schaub et al. 2021)"</a>
  *
  * @author Jonas Schaub
  * @version 1.0.2.0
