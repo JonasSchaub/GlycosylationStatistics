@@ -1,8 +1,8 @@
 [![DOI](https://zenodo.org/badge/284081201.svg)](https://zenodo.org/doi/10.5281/zenodo.7081511)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub issues](https://img.shields.io/github/issues/JonasSchaub/SugarRemoval.svg)](https://GitHub.com/JonasSchaub/SugarRemoval/issues/)
-[![GitHub contributors](https://img.shields.io/github/contributors/JonasSchaub/SugarRemoval.svg)](https://GitHub.com/JonasSchaub/SugarRemoval/graphs/contributors/)
-[![GitHub release](https://img.shields.io/github/release/JonasSchaub/SugarRemoval.svg)](https://github.com/JonasSchaub/SugarRemoval/releases/)
+[![GitHub issues](https://img.shields.io/github/issues/JonasSchaub/GlycosylationStatistics.svg)](https://GitHub.com/JonasSchaub/GlycosylationStatistics/issues/)
+[![GitHub contributors](https://img.shields.io/github/contributors/JonasSchaub/GlycosylationStatistics.svg)](https://GitHub.com/JonasSchaub/GlycosylationStatistics/graphs/contributors/)
+[![GitHub release](https://img.shields.io/github/release/JonasSchaub/GlycosylationStatistics.svg)](https://github.com/JonasSchaub/GlycosylationStatistics/releases/)
 
 # Description and Analysis of Glycosidic Residues in the Largest Open Natural Products Database
 ##### Code for automated, systematic detection of sugar moieties in the COlleCtion of Open Natural prodUcTs (COCONUT) database
